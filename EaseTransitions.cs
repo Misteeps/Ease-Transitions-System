@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-using static Game.EaseTransitions.EaseFunction;
+using static Game.EaseSystem.EaseFunction;
 
-namespace Game.EaseTransitions
+namespace Game.EaseSystem
 {
     #region Components
     // Supported Components and their Fields/Properties
@@ -158,7 +158,6 @@ namespace Game.EaseTransitions
     [ExecuteInEditMode]
     public class EaseTransitions : MonoBehaviour
     {
-
         #region Get Fields
         // Gets float from a supported Component's Field/Property
 
@@ -756,46 +755,5 @@ namespace Game.EaseTransitions
                 prop.inTrans = newTrans;
             }
         }
-
-
-
-        #region Depricated
-        /*/
-        public IEnumerator Transition(TransitionProperties prop)
-        {
-            while (true)
-            {
-                if (prop.inTrans.Count == 0)
-                    break;
-
-                Dictionary<Vector2Int, TransitionData> newTrans = new Dictionary<Vector2Int, TransitionData>();
-                foreach (KeyValuePair<Vector2Int, TransitionData> trans in prop.inTrans)
-                {
-                    ComponentTypes component = (ComponentTypes)trans.Key.x;
-                    int enumInt = trans.Key.y;
-                    TransitionData data = trans.Value;
-
-                    if (!data.timed)
-                        SetTimer(data, GetField(prop, component, enumInt));
-
-                    if (data.timer == data.duration)
-                    {
-                        SetField(prop, component, enumInt, data.end);
-                        continue;
-                    }
-
-                    data.timer = Mathf.Clamp(data.timer + Time.deltaTime, 0, data.duration);
-
-                    SetField(prop, component, enumInt, EaseData(data));
-                    newTrans.Add(trans.Key, data);
-                }
-
-                prop.inTrans = newTrans;
-
-                yield return null;
-            }
-        }
-        //*/
-        #endregion Depricated
     }
 }

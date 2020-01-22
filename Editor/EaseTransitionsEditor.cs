@@ -8,7 +8,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-using Game.EaseTransitions;
+using Game.EaseSystem;
 
 #region Data Containers
 [Serializable]
@@ -466,6 +466,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         }
         #endregion Inputs
     }
+
 
     #region Context Menus
     public void AddItemsToMenu(GenericMenu menu)
@@ -1354,6 +1355,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
     private void StopAllTransitions() => EaseTransitions.transitions.Clear();
     #endregion Transition Testing
     #endregion Methods
+
 
     private void Update()
     {
