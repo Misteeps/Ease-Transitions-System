@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
-namespace Game.EaseTransitions
+namespace Game.EaseSystem
 {
     public enum EaseFunctions
     {
