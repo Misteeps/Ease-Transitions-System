@@ -140,8 +140,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
     private EaseTransitionsData data;
     private EaseTransitions easeTransitions;
 
-    private bool showHeader;
-
+    private bool hoveringList;
     private Vector2 listScroll;
     private Vector2 editorScroll;
 
@@ -178,7 +177,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
     private void Initialize(bool keepData = false)
     {
         FindObjectsInScene();
-        SetMinWindow();
+        //SetWindowSize(283);
 
         FindEaseTransitons();
 
@@ -196,16 +195,12 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         props = new Dictionary<GameObject, TransitionProperties>();
         transitioning = false;
     }
-    private void SetMinWindow()
+    private void SetWindowSize(int width)
     {
-        /*/ Not To Be Used
-
         if (data.showList)
-            minSize = new Vector2(data.listWidth + 283, 0);
+            minSize = new Vector2(data.listWidth + width, 0);
         else
-            minSize = new Vector2(283, 0);
-
-        //*/
+            minSize = new Vector2(width, 0);
     }
 
     private void Interaction()
@@ -472,8 +467,10 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
     public void AddItemsToMenu(GenericMenu menu)
     {
         menu.AddItem(new GUIContent("Refresh Data File"), false, CM_RefreshFile);
+        menu.AddItem(new GUIContent("Clear Selected"), false, CM_ClearSelected);
     }
     private void CM_RefreshFile() => Initialize(true);
+    private void CM_ClearSelected() => SetAddress(selected, -1, -1, false, true);
 
     private void CM_CreateGroup() => Add(data.groups, NewName(data.groups), hovered.group + 1, true);
     private void CM_CreateObject() => Add(data.groups[hovered.group].objects, (GameObject)null, hovered.obj + 1, true, true);
@@ -535,6 +532,15 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
     private void CM_DeleteGroup() => Remove(data.groups, hovered.group);
     private void CM_DeleteObject() => Remove(data.groups[hovered.group].objects, hovered.obj);
     #endregion Context Menus
+
+    #region GUI Methods
+    private void bgColor() => bgColor(Color.white);
+    private void bgColor(float value) => bgColor(Color.white * (value / 10f));
+    private void bgColor(Color color)
+    {
+        GUI.backgroundColor = color;
+    }
+    #endregion GUI Methods
 
     #region Methods
     private void SetAddress(ListAddress address, int? group = null, int? obj = null, bool? show = false, bool? save = false)
@@ -690,10 +696,8 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
         code += WriteLine(0, "using System.Collections;");
         code += WriteLine(0, "using System.Collections.Generic;");
-        code += WriteLine(0, "");
         code += WriteLine(0, "using UnityEngine;");
-        code += WriteLine(0, "");
-        code += WriteLine(0, "using Game.EaseTransitions;");
+        code += WriteLine(0, "using Game.EaseSystem;");
         code += WriteLine(0, "");
         code += WriteLine(0, "public class " + data.name.Replace(" ", "") + " : MonoBehaviour");
         code += WriteLine(0, "{");
@@ -746,7 +750,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
     private void DefaultDataSettings()
     {
         data.showList = true;
-        data.listWidth = 160;
+        data.listWidth = 140;
 
         data.showObjectNames = true;
         data.autoSortFields = true;
@@ -1359,6 +1363,9 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
     private void Update()
     {
+        if (hoveringList)
+            Repaint();
+
         if (!transitioning)
             return;
         if (EaseTransitions.transitions.Count == 0)
@@ -1366,34 +1373,34 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
         EditorApplication.QueuePlayerLoopUpdate();
     }
-
+    
     private void OnGUI()
     {
+        GUIStyle bg = new GUIStyle("Box") { margin = new RectOffset(-4, -4, -4, -4), padding = new RectOffset(0, 0, 0, 0) };
+
         #region Null Check
         if (data == null)
         {
             #region Toolbar
             {
-                GUI.backgroundColor = Color.white * 1.2f;
+                bgColor(11);
                 GUILayout.BeginHorizontal();
 
                 #region Groups Count
                 {
-                    GUILayout.BeginHorizontal(EditorStyles.toolbar, GUILayout.Width(160));
+                    GUILayout.BeginHorizontal(EditorStyles.toolbar, GUILayout.Width(140));
 
                     GUILayout.Label("Groups", EditorStyles.toolbarButton);
 
                     int count = EditorGUILayout.DelayedIntField(0, EditorStyles.toolbarTextField, GUILayout.Width(32));
-                    if (GUILayout.Button("+", new GUIStyle("ToolbarButton") { padding = new RectOffset(3, 0, 0, 0) }, GUILayout.Width(20)))
+                    if (GUILayout.Button("+", new GUIStyle("ToolbarButton") { padding = new RectOffset(1, 0, 0, 0) }, GUILayout.Width(20)))
                         count++;
-                    if (GUILayout.Button("-", new GUIStyle("ToolbarButton") { padding = new RectOffset(3, 0, 0, 0) }, GUILayout.Width(20)))
+                    if (GUILayout.Button("-", new GUIStyle("ToolbarButton") { padding = new RectOffset(1, 0, 0, 0) }, GUILayout.Width(20)))
                         count--;
 
                     GUILayout.EndHorizontal();
                 }
                 #endregion Groups Count
-
-                GUILayout.Label("", EditorStyles.toolbarButton, GUILayout.Width(1));
 
                 #region Selected Path
                 {
@@ -1408,7 +1415,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                 #endregion Selected Path
 
                 GUILayout.EndHorizontal();
-                GUI.backgroundColor = Color.white;
+                bgColor();
             }
             #endregion Toolbar
 
@@ -1416,11 +1423,11 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
             #region List
             {
-                GUI.backgroundColor = Color.white * 0.48f;
-                GUILayout.BeginVertical("CN Box", GUILayout.Width(160));
-                GUI.backgroundColor = Color.white * 0.6f;
+                bgColor(8);
+                GUILayout.BeginVertical(bg, GUILayout.Width(140));
+                bgColor();
                 listScroll = GUILayout.BeginScrollView(listScroll, false, false, GUIStyle.none, GUI.skin.verticalScrollbar);
-                GUI.backgroundColor = Color.white;
+                bgColor();
 
                 GUILayout.EndScrollView();
                 GUILayout.EndVertical();
@@ -1429,12 +1436,13 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
             #region Editor
             {
-                GUI.backgroundColor = Color.white * 0.76f;
+                bgColor(12);
                 GUILayout.BeginHorizontal();
                 GUILayout.Space(2);
-                GUILayout.BeginVertical("CN Box");
-                GUI.backgroundColor = Color.white;
+                GUILayout.BeginVertical(bg);
+                bgColor(16);
                 editorScroll = GUILayout.BeginScrollView(editorScroll, false, false, GUIStyle.none, GUI.skin.verticalScrollbar);
+                bgColor();
 
                 GUIStyle toolbarLabel = new GUIStyle(EditorStyles.toolbarButton) { fontStyle = FontStyle.Bold };
 
@@ -1442,15 +1450,14 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                 {
                     #region Header
                     {
-                        GUI.backgroundColor = Color.white * 0.64f;
-                        GUILayout.BeginHorizontal("CN Box", GUILayout.Height(26));
-                        GUI.backgroundColor = Color.white * 1.1f;
+                        bgColor(9);
+                        GUILayout.BeginHorizontal(bg, GUILayout.Height(26));
+                        bgColor();
 
                         data = (EaseTransitionsData)EditorGUILayout.ObjectField(data, typeof(EaseTransitionsData), false, GUILayout.Height(22));
                         if (data != null)
                             Initialize();
-
-                        GUI.backgroundColor = Color.white;
+                        
                         GUILayout.EndHorizontal();
                     }
                     #endregion Header
@@ -1482,7 +1489,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
         #region Toolbar
         {
-            GUI.backgroundColor = Color.white * 1.2f;
+            bgColor(12);
             GUILayout.BeginHorizontal();
 
             #region Groups Count
@@ -1493,9 +1500,9 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                 GUILayout.Label("Groups", EditorStyles.toolbarButton);
 
                 int count = EditorGUILayout.DelayedIntField(data.groups.Count, EditorStyles.toolbarTextField, GUILayout.Width(32));
-                if (GUILayout.Button("+", new GUIStyle("ToolbarButton") { padding = new RectOffset(3, 0, 0, 0) }, GUILayout.Width(20)))
+                if (GUILayout.Button("+", new GUIStyle("ToolbarButton") { padding = new RectOffset(1, 0, 0, 0) }, GUILayout.Width(20)))
                     count++;
-                if (GUILayout.Button("-", new GUIStyle("ToolbarButton") { padding = new RectOffset(3, 0, 0, 0) }, GUILayout.Width(20)))
+                if (GUILayout.Button("-", new GUIStyle("ToolbarButton") { padding = new RectOffset(1, 0, 0, 0) }, GUILayout.Width(20)))
                     count--;
 
                 if (count != data.groups.Count)
@@ -1511,8 +1518,6 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                 GUILayout.EndHorizontal();
             }
             #endregion Groups Count
-
-            GUILayout.Label("", EditorStyles.toolbarButton, GUILayout.Width(1));
 
             #region Selected Path
             {
@@ -1537,7 +1542,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
             #endregion Selected Path
 
             GUILayout.EndHorizontal();
-            GUI.backgroundColor = Color.white;
+            bgColor();
         }
         #endregion Toolbar
 
@@ -1548,11 +1553,17 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         {
             GUIStyle textLabel = new GUIStyle(EditorStyles.label) { clipping = TextClipping.Overflow };
 
-            GUI.backgroundColor = Color.white * 0.48f;
-            GUILayout.BeginVertical("CN Box", GUILayout.Width(data.listWidth));
-            GUI.backgroundColor = Color.white * 0.6f;
+            bgColor(6);
+            Rect listRect = EditorGUILayout.BeginVertical(bg, GUILayout.Width(data.listWidth));
+
+            if (listRect.Contains(Event.current.mousePosition))
+                hoveringList = true;
+            else if (listRect.width != 1)
+                hoveringList = false;
+
+            bgColor(16);
             listScroll = GUILayout.BeginScrollView(listScroll, false, false, GUIStyle.none, GUI.skin.verticalScrollbar);
-            GUI.backgroundColor = Color.white;
+            bgColor();
 
             #region For Each Group
             for (int g = 0; g < data.groups.Count; g++)
@@ -1563,21 +1574,21 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                 {
                     GUILayout.Space(4);
                     if (selected.group == g && selected.obj == -1)
-                        GUI.backgroundColor = new Color(0.25f, 0.5f, 0.8f);
+                        bgColor(new Color(0.35f, 0.7f, 1.1f));
                     else if (selected.group == g)
-                        GUI.backgroundColor = new Color(0.3f, 0.6f, 0.9f);
+                        bgColor(new Color(0.3f, 0.6f, 1f));
                     else
-                        GUI.backgroundColor = Color.white * 0.96f;
+                        bgColor(14);
                     if (hovered.group == g && hovered.obj == -1)
                         GUI.backgroundColor -= Color.white * 0.12f;
-                    GUILayout.BeginHorizontal("CN Box", GUILayout.Width(data.listWidth), GUILayout.Height(24));
-                    GUI.backgroundColor = Color.white;
+                    GUILayout.BeginHorizontal(bg, GUILayout.Width(data.listWidth), GUILayout.Height(24));
+                    bgColor();
 
                     group.expandList = EditorGUILayout.Toggle(group.expandList, EditorStyles.foldout, GUILayout.Width(16), GUILayout.Height(22));
 
                     textLabel.fontSize = 12;
                     textLabel.fontStyle = FontStyle.Bold;
-                    textLabel.normal.textColor = (selected.group == g && selected.obj == -1) ? Color.white : Color.black;
+                    textLabel.normal.textColor = (selected.group == g) ? Color.white : Color.black;
                     EditorGUILayout.LabelField(group.name, textLabel, GUILayout.Width(1), GUILayout.Height(24));
 
                     GUILayout.EndHorizontal();
@@ -1593,8 +1604,6 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                 {
                     if (group.objects.Count != 0)
                     {
-                        GUILayout.Space(-1);
-
                         #region For Each Object
                         for (int o = 0; o < group.objects.Count; o++)
                         {
@@ -1604,13 +1613,13 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             {
                                 GUILayout.Space(-3);
                                 if (selected.group == g && selected.obj == o)
-                                    GUI.backgroundColor = new Color(0.35f, 0.7f, 1.1f);
+                                    bgColor(new Color(0.35f, 0.7f, 1.1f));
                                 else
-                                    GUI.backgroundColor = Color.white * 1.36f;
+                                    bgColor(13);
                                 if (hovered.group == g && hovered.obj == o)
                                     GUI.backgroundColor -= Color.white * 0.12f;
                                 GUILayout.BeginHorizontal("Box", GUILayout.Width(data.listWidth), GUILayout.Height(14));
-                                GUI.backgroundColor = Color.white;
+                                bgColor();
 
                                 textLabel.fontSize = 10;
                                 textLabel.fontStyle = FontStyle.Normal;
@@ -1645,12 +1654,13 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
         #region Editor
         {
-            GUI.backgroundColor = Color.white * 0.76f;
+            bgColor(12);
             GUILayout.BeginHorizontal();
-            GUILayout.Space(2);
-            GUILayout.BeginVertical("CN Box");
-            GUI.backgroundColor = Color.white;
+            GUILayout.Space(4);
+            GUILayout.BeginVertical(bg);
+            bgColor(16);
             editorScroll = GUILayout.BeginScrollView(editorScroll, false, false, GUIStyle.none, GUI.skin.verticalScrollbar);
+            bgColor();
 
             GUIStyle toolbarLabel = new GUIStyle(EditorStyles.toolbarButton) { fontStyle = FontStyle.Bold };
 
@@ -1660,15 +1670,14 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                 {
                     #region Header
                     {
-                        GUI.backgroundColor = Color.white * 0.64f;
-                        GUILayout.BeginHorizontal("CN Box", GUILayout.Height(26));
-                        GUI.backgroundColor = Color.white * 1.1f;
+                        bgColor(9);
+                        GUILayout.BeginHorizontal(bg, GUILayout.Height(26));
+                        bgColor();
 
                         data = (EaseTransitionsData)EditorGUILayout.ObjectField(data, typeof(EaseTransitionsData), false, GUILayout.Height(22));
                         if (data == null)
                             return;
-
-                        GUI.backgroundColor = Color.white;
+                        
                         GUILayout.EndHorizontal();
                     }
                     #endregion Header
@@ -1681,21 +1690,18 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                     {
                         #region Toolbar
                         {
-                            GUI.backgroundColor = Color.white * 1.16f;
+                            bgColor(12);
                             GUILayout.BeginHorizontal(EditorStyles.toolbar);
-                            GUI.backgroundColor = Color.white;
 
                             GUILayout.Label("", EditorStyles.toolbarButton, GUILayout.Width(1));
                             data.showSettings = EditorGUILayout.Toggle(data.showSettings, EditorStyles.foldout, GUILayout.Width(16), GUILayout.Height(16));
-
-                            GUI.backgroundColor = Color.white * 1.16f;
 
                             GUILayout.Label("Settings", toolbarLabel);
 
                             if (GUILayout.Button("Defaults", EditorStyles.toolbarButton, GUILayout.Width(78)))
                                 DefaultDataSettings();
 
-                            GUI.backgroundColor = Color.white;
+                            bgColor();
                             GUILayout.EndHorizontal();
                         }
                         #endregion Toolbar
@@ -1703,14 +1709,14 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                         #region Options
                         if (data.showSettings)
                         {
-                            GUI.backgroundColor = Color.white * 0.64f;
-                            GUILayout.BeginVertical("CN Box", GUILayout.Height(1));
-                            GUI.backgroundColor = Color.white;
+                            bgColor(9);
+                            GUILayout.BeginVertical(bg);
+                            bgColor();
                             GUILayout.Space(4);
 
                             data.showList = EditorGUILayout.Toggle("Show List", data.showList);
                             data.listWidth = Mathf.Clamp(EditorGUILayout.IntField("List Width", data.listWidth), 40, 400);
-                            SetMinWindow();
+                            //SetWindowSize(283);
 
                             GUILayout.Space(4);
 
@@ -1746,21 +1752,18 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                     {
                         #region Toolbar
                         {
-                            GUI.backgroundColor = Color.white * 1.16f;
+                            bgColor(12);
                             GUILayout.BeginHorizontal(EditorStyles.toolbar);
-                            GUI.backgroundColor = Color.white;
 
                             GUILayout.Label("", EditorStyles.toolbarButton, GUILayout.Width(1));
                             data.showGroups = EditorGUILayout.Toggle(data.showGroups, EditorStyles.foldout, GUILayout.Width(16), GUILayout.Height(16));
 
-                            GUI.backgroundColor = Color.white * 1.16f;
-
                             GUILayout.Label("Groups", toolbarLabel);
 
                             int count = EditorGUILayout.DelayedIntField(data.groups.Count, EditorStyles.toolbarTextField, GUILayout.Width(32));
-                            if (GUILayout.Button("+", new GUIStyle("ToolbarButton") { padding = new RectOffset(3, 0, 0, 0) }, GUILayout.Width(20)))
+                            if (GUILayout.Button("+", new GUIStyle("ToolbarButton") { padding = new RectOffset(1, 0, 0, 0) }, GUILayout.Width(20)))
                                 count++;
-                            if (GUILayout.Button("-", new GUIStyle("ToolbarButton") { padding = new RectOffset(3, 0, 0, 0) }, GUILayout.Width(20)))
+                            if (GUILayout.Button("-", new GUIStyle("ToolbarButton") { padding = new RectOffset(1, 0, 0, 0) }, GUILayout.Width(20)))
                                 count--;
 
                             if (count != data.groups.Count)
@@ -1773,7 +1776,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                                     Remove(data.groups);
                             }
 
-                            GUI.backgroundColor = Color.white;
+                            bgColor();
                             GUILayout.EndHorizontal();
                         }
                         #endregion Toolbar
@@ -1784,13 +1787,16 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             for (int g = 0; g < data.groups.Count; g++)
                             {
                                 TransitionGroup group = data.groups[g];
+                                int devisor = 0;
+                                if (data.groups.Count % 2 == 0)
+                                    devisor = 1;
 
-                                if (g % 2 == 1)
-                                    GUI.backgroundColor = Color.white * 0.88f;
+                                if (g % 2 == devisor)
+                                    bgColor(7);
                                 else
-                                    GUI.backgroundColor = Color.white;
-                                GUILayout.BeginHorizontal("CN Box", GUILayout.Height(23));
-                                GUI.backgroundColor = Color.white * 1.08f;
+                                    bgColor(11);
+                                GUILayout.BeginHorizontal(bg);
+                                bgColor();
 
                                 int order = EditorGUILayout.DelayedIntField(g + 1, EditorStyles.textField, GUILayout.Width(32));
                                 if (order != g + 1)
@@ -1810,8 +1816,8 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                                 if (GUILayout.Button("Select", GUILayout.Width(48), GUILayout.Height(18)))
                                     SetAddress(selected, g, null, true, true);
 
-                                GUI.backgroundColor = Color.white;
                                 GUILayout.EndHorizontal();
+                                GUILayout.Space(4);
                             }
                         }
                         #endregion List
@@ -1826,21 +1832,18 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                     {
                         #region Toolbar
                         {
-                            GUI.backgroundColor = Color.white * 1.16f;
+                            bgColor(12);
                             GUILayout.BeginHorizontal(EditorStyles.toolbar);
-                            GUI.backgroundColor = Color.white;
 
                             GUILayout.Label("", EditorStyles.toolbarButton, GUILayout.Width(1));
                             data.showCode = EditorGUILayout.Toggle(data.showCode, EditorStyles.foldout, GUILayout.Width(16), GUILayout.Height(16));
-
-                            GUI.backgroundColor = Color.white * 1.16f;
 
                             GUILayout.Label("Export Code", toolbarLabel);
 
                             if (GUILayout.Button("Copy", EditorStyles.toolbarButton, GUILayout.Width(78)))
                                 EditorGUIUtility.systemCopyBuffer = ExportCode();
 
-                            GUI.backgroundColor = Color.white;
+                            bgColor();
                             GUILayout.EndHorizontal();
                         }
                         #endregion Toolbar
@@ -1848,9 +1851,9 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                         #region Code
                         if (data.showCode)
                         {
-                            GUI.backgroundColor = Color.white * 0.64f;
-                            GUILayout.BeginVertical("CN Box", GUILayout.Height(1));
-                            GUI.backgroundColor = Color.white * 1.01f;
+                            bgColor(9);
+                            GUILayout.BeginVertical(bg);
+                            bgColor(16);
                             GUILayout.Space(4);
 
                             GUILayout.BeginVertical("Box");
@@ -1859,7 +1862,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             GUILayout.EndVertical();
 
                             GUILayout.Space(4);
-                            GUI.backgroundColor = Color.white;
+                            bgColor();
                             GUILayout.EndVertical();
                         }
                         #endregion Code
@@ -1880,9 +1883,9 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
                     #region Header
                     {
-                        GUI.backgroundColor = Color.white * 0.64f;
-                        GUILayout.BeginHorizontal("CN Box", GUILayout.Height(26));
-                        GUI.backgroundColor = Color.white * 1.1f;
+                        bgColor(9);
+                        GUILayout.BeginHorizontal(bg, GUILayout.Height(26));
+                        bgColor();
 
                         int order = EditorGUILayout.DelayedIntField(selected.group + 1, new GUIStyle(EditorStyles.textField) { fontSize = 13 }, GUILayout.Width(32), GUILayout.Height(22));
                         if (order != selected.group + 1)
@@ -1899,7 +1902,6 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                                 ReName(data.groups, group, name);
                         }
 
-                        GUI.backgroundColor = Color.white;
                         GUILayout.EndHorizontal();
                     }
                     #endregion Header
@@ -1912,21 +1914,18 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                     {
                         #region Toolbar
                         {
-                            GUI.backgroundColor = Color.white * 1.16f;
+                            bgColor(12);
                             GUILayout.BeginHorizontal(EditorStyles.toolbar);
-                            GUI.backgroundColor = Color.white;
 
                             GUILayout.Label("", EditorStyles.toolbarButton, GUILayout.Width(1));
                             group.showTests = EditorGUILayout.Toggle(group.showTests, EditorStyles.foldout, GUILayout.Width(16), GUILayout.Height(16));
-
-                            GUI.backgroundColor = Color.white * 1.16f;
 
                             GUILayout.Label("Transition Testing", toolbarLabel);
 
                             if (GUILayout.Button("Transition", EditorStyles.toolbarButton, GUILayout.Width(78)))
                                 SetTransition(group, false);
 
-                            GUI.backgroundColor = Color.white;
+                            bgColor();
                             GUILayout.EndHorizontal();
                         }
                         #endregion Toolbar
@@ -1934,9 +1933,9 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                         #region Buttons
                         if (group.showTests)
                         {
-                            GUI.backgroundColor = Color.white * 0.64f;
-                            GUILayout.BeginVertical("CN Box", GUILayout.Height(1));
-                            GUI.backgroundColor = Color.white * 1.08f;
+                            bgColor(9);
+                            GUILayout.BeginVertical(bg);
+                            bgColor();
                             GUILayout.Space(4);
 
                             if (GUILayout.Button("Set to Start"))
@@ -1956,15 +1955,12 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             GUILayout.Space(4);
 
                             GUILayout.BeginHorizontal();
-                            GUI.backgroundColor = Color.white;
                             EditorGUILayout.LabelField("Transitions : " + EaseTransitions.transitions.Count, GUILayout.Width(149));
-                            GUI.backgroundColor = Color.white * 1.08f;
                             if (GUILayout.Button("Stop All Transitions"))
                                 StopAllTransitions();
                             GUILayout.EndHorizontal();
 
                             GUILayout.Space(4);
-                            GUI.backgroundColor = Color.white;
                             GUILayout.EndVertical();
                         }
                         #endregion Buttons
@@ -1979,21 +1975,18 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                     {
                         #region Toolbar
                         {
-                            GUI.backgroundColor = Color.white * 1.16f;
+                            bgColor(12);
                             GUILayout.BeginHorizontal(EditorStyles.toolbar);
-                            GUI.backgroundColor = Color.white;
 
                             GUILayout.Label("", EditorStyles.toolbarButton, GUILayout.Width(1));
                             group.showObjs = EditorGUILayout.Toggle(group.showObjs, EditorStyles.foldout, GUILayout.Width(16), GUILayout.Height(16));
 
-                            GUI.backgroundColor = Color.white * 1.16f;
-
                             GUILayout.Label("GameObjects", toolbarLabel);
 
                             int count = EditorGUILayout.DelayedIntField(group.objects.Count, EditorStyles.toolbarTextField, GUILayout.Width(32));
-                            if (GUILayout.Button("+", new GUIStyle("ToolbarButton") { padding = new RectOffset(3, 0, 0, 0) }, GUILayout.Width(20)))
+                            if (GUILayout.Button("+", new GUIStyle("ToolbarButton") { padding = new RectOffset(1, 0, 0, 0) }, GUILayout.Width(20)))
                                 count++;
-                            if (GUILayout.Button("-", new GUIStyle("ToolbarButton") { padding = new RectOffset(3, 0, 0, 0) }, GUILayout.Width(20)))
+                            if (GUILayout.Button("-", new GUIStyle("ToolbarButton") { padding = new RectOffset(1, 0, 0, 0) }, GUILayout.Width(20)))
                                 count--;
 
                             if (count != group.objects.Count)
@@ -2006,7 +1999,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                                     Remove(group.objects);
                             }
 
-                            GUI.backgroundColor = Color.white;
+                            bgColor();
                             GUILayout.EndHorizontal();
                         }
                         #endregion Toolbar
@@ -2017,13 +2010,16 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             for (int o = 0; o < group.objects.Count; o++)
                             {
                                 TransitionObject obj = group.objects[o];
+                                int devisor = 0;
+                                if (group.objects.Count % 2 == 0)
+                                    devisor = 1;
 
-                                if (o % 2 == 1)
-                                    GUI.backgroundColor = Color.white * 0.88f;
+                                if (o % 2 == devisor)
+                                    bgColor(7);
                                 else
-                                    GUI.backgroundColor = Color.white;
-                                GUILayout.BeginHorizontal("CN Box", GUILayout.Height(23));
-                                GUI.backgroundColor = Color.white * 1.08f;
+                                    bgColor(11);
+                                GUILayout.BeginHorizontal(bg);
+                                bgColor();
 
                                 int order = EditorGUILayout.DelayedIntField(o + 1, EditorStyles.textField, GUILayout.Width(32));
                                 if (order != o + 1)
@@ -2044,8 +2040,8 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                                 if (GUILayout.Button("Select", GUILayout.Width(48), GUILayout.Height(18)))
                                     SetAddress(selected, null, o, true, true);
 
-                                GUI.backgroundColor = Color.white;
                                 GUILayout.EndHorizontal();
+                                GUILayout.Space(4);
                             }
                         }
                         #endregion List
@@ -2060,21 +2056,18 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                     {
                         #region Toolbar
                         {
-                            GUI.backgroundColor = Color.white * 1.16f;
+                            bgColor(12);
                             GUILayout.BeginHorizontal(EditorStyles.toolbar);
-                            GUI.backgroundColor = Color.white;
 
                             GUILayout.Label("", EditorStyles.toolbarButton, GUILayout.Width(1));
                             group.showCode = EditorGUILayout.Toggle(group.showCode, EditorStyles.foldout, GUILayout.Width(16), GUILayout.Height(16));
-
-                            GUI.backgroundColor = Color.white * 1.16f;
 
                             GUILayout.Label("Export Code", toolbarLabel);
 
                             if (GUILayout.Button("Copy", EditorStyles.toolbarButton, GUILayout.Width(78)))
                                 EditorGUIUtility.systemCopyBuffer = ExportCode(group);
 
-                            GUI.backgroundColor = Color.white;
+                            bgColor();
                             GUILayout.EndHorizontal();
                         }
                         #endregion Toolbar
@@ -2082,9 +2075,9 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                         #region Code
                         if (group.showCode)
                         {
-                            GUI.backgroundColor = Color.white * 0.64f;
-                            GUILayout.BeginVertical("CN Box", GUILayout.Height(1));
-                            GUI.backgroundColor = Color.white * 1.01f;
+                            bgColor(9);
+                            GUILayout.BeginVertical(bg);
+                            bgColor(16);
                             GUILayout.Space(4);
 
                             GUILayout.BeginVertical("Box");
@@ -2093,7 +2086,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             GUILayout.EndVertical();
 
                             GUILayout.Space(4);
-                            GUI.backgroundColor = Color.white;
+                            bgColor();
                             GUILayout.EndVertical();
                         }
                         #endregion Code
@@ -2115,9 +2108,9 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
                     #region Header
                     {
-                        GUI.backgroundColor = Color.white * 0.64f;
-                        GUILayout.BeginHorizontal("CN Box", GUILayout.Height(26));
-                        GUI.backgroundColor = Color.white * 1.1f;
+                        bgColor(9);
+                        GUILayout.BeginHorizontal(bg, GUILayout.Height(26));
+                        bgColor();
 
                         int order = EditorGUILayout.DelayedIntField(selected.obj + 1, new GUIStyle(EditorStyles.textField) { fontSize = 13 }, GUILayout.Width(32), GUILayout.Height(22));
                         if (order != selected.obj + 1)
@@ -2132,7 +2125,6 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             ReObject(obj, name);
                         GUILayout.EndVertical();
 
-                        GUI.backgroundColor = Color.white;
                         GUILayout.EndHorizontal();
                     }
                     #endregion Header
@@ -2145,21 +2137,18 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                     {
                         #region Toolbar
                         {
-                            GUI.backgroundColor = Color.white * 1.16f;
+                            bgColor(12);
                             GUILayout.BeginHorizontal(EditorStyles.toolbar);
-                            GUI.backgroundColor = Color.white;
 
                             GUILayout.Label("", EditorStyles.toolbarButton, GUILayout.Width(1));
                             obj.showTests = EditorGUILayout.Toggle(obj.showTests, EditorStyles.foldout, GUILayout.Width(16), GUILayout.Height(16));
-
-                            GUI.backgroundColor = Color.white * 1.16f;
 
                             GUILayout.Label("Transition Testing", toolbarLabel);
 
                             if (GUILayout.Button("Transition", EditorStyles.toolbarButton, GUILayout.Width(78)))
                                 SetTransition(obj, false);
 
-                            GUI.backgroundColor = Color.white;
+                            bgColor();
                             GUILayout.EndHorizontal();
                         }
                         #endregion Toolbar
@@ -2167,9 +2156,9 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                         #region Buttons
                         if (obj.showTests)
                         {
-                            GUI.backgroundColor = Color.white * 0.64f;
-                            GUILayout.BeginVertical("CN Box", GUILayout.Height(1));
-                            GUI.backgroundColor = Color.white * 1.08f;
+                            bgColor(9);
+                            GUILayout.BeginVertical(bg);
+                            bgColor();
                             GUILayout.Space(4);
 
                             if (GUILayout.Button("Set to Start"))
@@ -2189,15 +2178,12 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             GUILayout.Space(4);
 
                             GUILayout.BeginHorizontal();
-                            GUI.backgroundColor = Color.white;
                             EditorGUILayout.LabelField("Transitions : " + EaseTransitions.transitions.Count, GUILayout.Width(149));
-                            GUI.backgroundColor = Color.white * 1.08f;
                             if (GUILayout.Button("Stop All Transitions"))
                                 StopAllTransitions();
                             GUILayout.EndHorizontal();
 
                             GUILayout.Space(4);
-                            GUI.backgroundColor = Color.white;
                             GUILayout.EndVertical();
                         }
                         #endregion Buttons
@@ -2212,20 +2198,17 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                     {
                         #region Toolbar
                         {
-                            GUI.backgroundColor = Color.white * 1.16f;
+                            bgColor(12);
                             GUILayout.BeginHorizontal(EditorStyles.toolbar);
-                            GUI.backgroundColor = Color.white;
 
                             GUILayout.Label("", EditorStyles.toolbarButton, GUILayout.Width(1));
                             obj.showImports = EditorGUILayout.Toggle(obj.showImports, EditorStyles.foldout, GUILayout.Width(16), GUILayout.Height(16));
-
-                            GUI.backgroundColor = Color.white * 1.16f;
 
                             GUILayout.Label("Import Values", toolbarLabel);
 
                             GUILayout.Button("", EditorStyles.toolbarButton, GUILayout.Width(78));
 
-                            GUI.backgroundColor = Color.white;
+                            bgColor();
                             GUILayout.EndHorizontal();
                         }
                         #endregion Toolbar
@@ -2233,9 +2216,9 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                         #region Buttons
                         if (obj.showImports)
                         {
-                            GUI.backgroundColor = Color.white * 0.64f;
-                            GUILayout.BeginVertical("CN Box", GUILayout.Height(1));
-                            GUI.backgroundColor = Color.white * 1.08f;
+                            bgColor(9);
+                            GUILayout.BeginVertical(bg);
+                            bgColor();
                             GUILayout.Space(4);
 
                             if (GUILayout.Button("Set Start to Current Values"))
@@ -2245,7 +2228,6 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                                 ImportToEnd(obj);
 
                             GUILayout.Space(4);
-                            GUI.backgroundColor = Color.white;
                             GUILayout.EndVertical();
                         }
                         #endregion Buttons
@@ -2260,20 +2242,17 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                     {
                         #region Toolbar
                         {
-                            GUI.backgroundColor = Color.white * 1.16f;
+                            bgColor(12);
                             GUILayout.BeginHorizontal(EditorStyles.toolbar);
-                            GUI.backgroundColor = Color.white;
 
                             GUILayout.Label("", EditorStyles.toolbarButton, GUILayout.Width(1));
                             obj.showEase = EditorGUILayout.Toggle(obj.showEase, EditorStyles.foldout, GUILayout.Width(16), GUILayout.Height(16));
-
-                            GUI.backgroundColor = Color.white * 1.16f;
 
                             GUILayout.Label("Ease", toolbarLabel);
 
                             GUILayout.Button("", EditorStyles.toolbarButton, GUILayout.Width(78));
 
-                            GUI.backgroundColor = Color.white;
+                            bgColor();
                             GUILayout.EndHorizontal();
                         }
                         #endregion Toolbar
@@ -2281,34 +2260,28 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                         #region Buttons
                         if (obj.showEase)
                         {
-                            GUI.backgroundColor = Color.white * 0.64f;
-                            GUILayout.BeginVertical("CN Box", GUILayout.Height(1));
-                            GUI.backgroundColor = Color.white * 1.08f;
+                            bgColor(9);
+                            GUILayout.BeginVertical(bg);
+                            bgColor();
                             GUILayout.Space(4);
 
 
                             GUILayout.BeginHorizontal();
-                            GUI.backgroundColor = Color.white;
                             GUILayout.Label("Singular Ease", GUILayout.Width(124), GUILayout.Height(16));
                             obj.singleEase = EditorGUILayout.Toggle(obj.singleEase);
                             GUILayout.EndHorizontal();
 
                             GUILayout.BeginHorizontal();
-                            GUI.backgroundColor = Color.white;
                             GUILayout.Label("Ease Function", GUILayout.Width(124), GUILayout.Height(16));
-                            GUI.backgroundColor = Color.white * 1.08f;
                             obj.ease = (EaseFunctions)EditorGUILayout.EnumPopup(obj.ease);
                             GUILayout.EndHorizontal();
 
                             GUILayout.BeginHorizontal();
-                            GUI.backgroundColor = Color.white;
                             GUILayout.Label("Duration (Seconds)", GUILayout.Width(124), GUILayout.Height(16));
-                            GUI.backgroundColor = Color.white * 1.08f;
                             obj.duration = EditorGUILayout.FloatField(obj.duration);
                             GUILayout.EndHorizontal();
 
                             GUILayout.Space(4);
-                            GUI.backgroundColor = Color.white;
                             GUILayout.EndVertical();
                         }
                         #endregion Buttons
@@ -2333,21 +2306,18 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             {
                                 #region Toolbar
                                 {
-                                    GUI.backgroundColor = Color.white * 1.16f;
+                                    bgColor(12);
                                     GUILayout.BeginHorizontal(EditorStyles.toolbar);
-                                    GUI.backgroundColor = Color.white;
 
                                     GUILayout.Label("", EditorStyles.toolbarButton, GUILayout.Width(1));
                                     component.showFields = EditorGUILayout.Toggle(component.showFields, EditorStyles.foldout, GUILayout.Width(16), GUILayout.Height(16));
 
-                                    GUI.backgroundColor = Color.white * 1.16f;
-
                                     GUILayout.Label(component.type.ToString(), toolbarLabel);
 
                                     int count = EditorGUILayout.DelayedIntField(component.fields.Count, EditorStyles.toolbarTextField, GUILayout.Width(32));
-                                    if (GUILayout.Button("+", new GUIStyle("ToolbarButton") { padding = new RectOffset(3, 0, 0, 0) }, GUILayout.Width(20)))
+                                    if (GUILayout.Button("+", new GUIStyle("ToolbarButton") { padding = new RectOffset(1, 0, 0, 0) }, GUILayout.Width(20)))
                                         count++;
-                                    if (GUILayout.Button("-", new GUIStyle("ToolbarButton") { padding = new RectOffset(3, 0, 0, 0) }, GUILayout.Width(20)))
+                                    if (GUILayout.Button("-", new GUIStyle("ToolbarButton") { padding = new RectOffset(1, 0, 0, 0) }, GUILayout.Width(20)))
                                         count--;
 
                                     if (count != component.fields.Count)
@@ -2359,7 +2329,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                                             Remove(component.fields);
                                     }
 
-                                    GUI.backgroundColor = Color.white;
+                                    bgColor();
                                     GUILayout.EndHorizontal();
                                 }
                                 #endregion Toolbar
@@ -2373,13 +2343,16 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                                     for (int f = 0; f < component.fields.Count; f++)
                                     {
                                         TransitionField field = component.fields[f];
+                                        int devisor = 0;
+                                        if (component.fields.Count % 2 == 0)
+                                            devisor = 1;
 
-                                        if (f % 2 == 1)
-                                            GUI.backgroundColor = Color.white * 0.88f;
+                                        if (f % 2 == devisor)
+                                            bgColor(7);
                                         else
-                                            GUI.backgroundColor = Color.white;
-                                        GUILayout.BeginVertical("CN Box", GUILayout.Height(23));
-                                        GUI.backgroundColor = Color.white * 1.08f;
+                                            bgColor(11);
+                                        GUILayout.BeginVertical(bg, GUILayout.Height(23));
+                                        bgColor();
                                         GUILayout.Space(4);
 
                                         GUILayout.BeginHorizontal();
@@ -2397,14 +2370,10 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                                         GUILayout.EndHorizontal();
 
                                         GUILayout.BeginHorizontal();
-                                        GUI.backgroundColor = Color.white;
                                         GUILayout.Label("Start:");
-                                        GUI.backgroundColor = Color.white * 1.08f;
                                         field.start = EditorGUILayout.FloatField(field.start);
                                         GUILayout.Space(4);
-                                        GUI.backgroundColor = Color.white;
                                         GUILayout.Label("End:");
-                                        GUI.backgroundColor = Color.white * 1.08f;
                                         field.end = EditorGUILayout.FloatField(field.end);
                                         GUILayout.EndHorizontal();
 
@@ -2414,7 +2383,6 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                                             field.ease = (EaseFunctions)EditorGUILayout.EnumPopup(field.ease, GUILayout.Width(124));
                                             field.duration = EditorGUILayout.FloatField(field.duration);
                                             GUILayout.Space(-4);
-                                            GUI.backgroundColor = Color.white;
                                             GUILayout.Label("Seconds", GUILayout.Width(52));
                                             GUILayout.EndHorizontal();
                                         }
@@ -2426,7 +2394,6 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
                                         GUILayout.Space(4);
                                         GUILayout.EndVertical();
-                                        GUI.backgroundColor = Color.white;
                                     }
                                 }
                                 #endregion Fields List
@@ -2444,21 +2411,18 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                     {
                         #region Toolbar
                         {
-                            GUI.backgroundColor = Color.white * 1.16f;
+                            bgColor(12);
                             GUILayout.BeginHorizontal(EditorStyles.toolbar);
-                            GUI.backgroundColor = Color.white;
 
                             GUILayout.Label("", EditorStyles.toolbarButton, GUILayout.Width(1));
                             obj.showCode = EditorGUILayout.Toggle(obj.showCode, EditorStyles.foldout, GUILayout.Width(16), GUILayout.Height(16));
-
-                            GUI.backgroundColor = Color.white * 1.16f;
 
                             GUILayout.Label("Export Code", toolbarLabel);
 
                             if (GUILayout.Button("Copy", EditorStyles.toolbarButton, GUILayout.Width(78)))
                                 EditorGUIUtility.systemCopyBuffer = ExportCode(obj);
 
-                            GUI.backgroundColor = Color.white;
+                            bgColor();
                             GUILayout.EndHorizontal();
                         }
                         #endregion Toolbar
@@ -2466,9 +2430,9 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                         #region Code
                         if (obj.showCode)
                         {
-                            GUI.backgroundColor = Color.white * 0.64f;
-                            GUILayout.BeginVertical("CN Box", GUILayout.Height(1));
-                            GUI.backgroundColor = Color.white * 1.01f;
+                            bgColor(9);
+                            GUILayout.BeginVertical(bg);
+                            bgColor(16);
                             GUILayout.Space(4);
 
                             GUILayout.BeginVertical("Box");
@@ -2477,7 +2441,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             GUILayout.EndVertical();
 
                             GUILayout.Space(4);
-                            GUI.backgroundColor = Color.white;
+                            bgColor();
                             GUILayout.EndVertical();
                         }
                         #endregion Code
@@ -2493,7 +2457,6 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
-            GUILayout.Space(2);
             GUILayout.EndHorizontal();
         }
         #endregion Editor
