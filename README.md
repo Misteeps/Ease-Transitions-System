@@ -1,6 +1,8 @@
 # Ease-Transitions-System
 Unity system to easily test and apply transitions to component values
-> Warning : UI differs drastically between recent unity versions, __functionality is not affected.__
+
+> UI is designed for 2019.3
+> UI for 2019.2 and older is different and messy, but will still work
 
 # Supported Components
 - Transform
@@ -21,7 +23,9 @@ Unity system to easily test and apply transitions to component values
 >- Copy templated code and paste into game code
 
 # To Do
-- Full Manual Writeup
-- Unified UI
+- Full Documentation
+
+# Future Considerations
+- Clean up UI for 2019.2 and older
 - Visualize Curves
 - Custom Curves

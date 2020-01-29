@@ -13,7 +13,7 @@ public class EaseTransitionsData : ScriptableObject
     public bool showCode = true;
 
     public bool showList = true;
-    public int listWidth = 160;
+    public int listWidth = 140;
 
     public bool showObjectNames = true;
     public bool autoSortFields = true;
