@@ -254,7 +254,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         }
         #endregion Mouse
 
-        #region Inputs
+        #region Selected
         if (Event.current.type == EventType.KeyDown && selected.group != -1)
         {
             if (Event.current.control)
@@ -366,18 +366,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                         else
                             Move(data.groups[selected.group].objects, selected.obj, selected.obj + 1);
                         break;
-                    #endregion Move Down
-
-                    #region Forward Selected History
-                    case KeyCode.RightArrow:
-                        ForwardSelectedHistory();
-                        break;
-                    #endregion Forward Selected History
-                    #region Backward Selected History
-                    case KeyCode.LeftArrow:
-                        BackwardSelectedHistory();
-                        break;
-                        #endregion Backward Selected History
+                        #endregion Move Down
                 }
             else
                 switch (Event.current.keyCode)
@@ -459,7 +448,26 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
             Repaint();
         }
-        #endregion Inputs
+        #endregion Selected
+
+        #region Selected History
+        if (Event.current.type == EventType.KeyDown && Event.current.alt)
+        {
+            switch (Event.current.keyCode)
+            {
+                #region Forward Selected History
+                case KeyCode.RightArrow:
+                    ForwardSelectedHistory();
+                    break;
+                #endregion Forward Selected History
+                #region Backward Selected History
+                case KeyCode.LeftArrow:
+                    BackwardSelectedHistory();
+                    break;
+                    #endregion Backward Selected History
+            }
+        }
+        #endregion Selected History
     }
 
 
@@ -468,9 +476,11 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
     {
         menu.AddItem(new GUIContent("Refresh Data File"), false, CM_RefreshFile);
         menu.AddItem(new GUIContent("Clear Selected"), false, CM_ClearSelected);
+        menu.AddItem(new GUIContent("Check Object Names"), false, CM_CheckObjectNames);
     }
     private void CM_RefreshFile() => Initialize(true);
     private void CM_ClearSelected() => SetAddress(selected, -1, -1, false, true);
+    private void CM_CheckObjectNames() => MatchObjectNames();
 
     private void CM_CreateGroup() => Add(data.groups, NewName(data.groups), hovered.group + 1, true);
     private void CM_CreateObject() => Add(data.groups[hovered.group].objects, (GameObject)null, hovered.obj + 1, true, true);
@@ -617,7 +627,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
     private void BackwardSelectedHistory() => SeekSelectedHistory(++selectedHistoryPos);
     private void SeekSelectedHistory(int pos)
     {
-        selectedHistoryPos = Mathf.Clamp(pos, 0, Mathf.Min(selectedHistory.Count - 1, 256));
+        selectedHistoryPos = Mathf.Clamp(pos, 0, selectedHistory.Count - 1);
 
         SetAddress(selected, selectedHistory[selectedHistoryPos].group, selectedHistory[selectedHistoryPos].obj, true, false);
     }
@@ -667,6 +677,40 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                     logEmpty += "> " + emptyObjs[i] + "\n";
                 Debug.LogWarning(logEmpty);
             }
+        }
+    }
+    private void MatchObjectNames(bool? log = true)
+    {
+        List<string> oldNames = new List<string>();
+        List<string> newNames = new List<string>();
+
+        for (int g = 0; g < data.groups.Count; g++)
+        {
+            TransitionGroup group = data.groups[g];
+
+            for (int o = 0; o < group.objects.Count; o++)
+            {
+                TransitionObject obj = group.objects[o];
+
+                if (obj.gameObject != null && obj.name != obj.gameObject.name)
+                {
+                    if (log.Value)
+                    {
+                        oldNames.Add(obj.name);
+                        newNames.Add(obj.gameObject.name);
+                    }
+
+                    obj.name = obj.gameObject.name;
+                }
+            }
+        }
+
+        if (log.Value && oldNames.Count != 0)
+        {
+            string logName = "Renamed " + oldNames.Count + " objects\n";
+            for (int i = 0; i < oldNames.Count; i++)
+                logName += "> \"" + oldNames[i] + "\" to \"" + newNames[i] + "\"\n";
+            Debug.Log(logName);
         }
     }
 

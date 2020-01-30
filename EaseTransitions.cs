@@ -661,7 +661,7 @@ namespace Game.EaseSystem
         public static float animationSpeed = 1;     // Global speed scale of Transitions
         public static List<TransitionProperties> transitions = new List<TransitionProperties>();
 
-
+        // Returns field value based on the timer
         private float EaseData(TransitionData data)
         {
             float x = Mathf.InverseLerp(0, data.duration, data.timer);
@@ -669,6 +669,8 @@ namespace Game.EaseSystem
 
             return Mathf.LerpUnclamped(data.start, data.end, y);
         }
+
+        // Sets timer based on where the field value is in relation to the start and end of transition
         private void SetTimer(TransitionData data, float value)
         {
             if (data.start < data.end)
@@ -718,37 +720,37 @@ namespace Game.EaseSystem
             if (transitions.Count == 0)
                 return;
 
-            for (int p = 0; p < transitions.Count; p++)
+            for (int p = 0; p < transitions.Count; p++)    // Loops through all objects that need to be transitioned
             {
                 TransitionProperties prop = transitions[p];
 
-                if (prop.inTrans.Count == 0)
+                if (prop.inTrans.Count == 0)    // Removes object if finished transitioning
                 {
                     transitions.Remove(prop);
                     continue;
                 }
-                if (prop.pause)
+                if (prop.pause)    // Ignores object if paused
                     continue;
                 
                 Dictionary<Vector2Int, TransitionData> newTrans = new Dictionary<Vector2Int, TransitionData>();
-                foreach (KeyValuePair<Vector2Int, TransitionData> trans in prop.inTrans)
+                foreach (KeyValuePair<Vector2Int, TransitionData> trans in prop.inTrans)    // Loops through all transitioning components in object
                 {
                     ComponentTypes component = (ComponentTypes)trans.Key.x;
                     int enumInt = trans.Key.y;
                     TransitionData data = trans.Value;
 
-                    if (!data.timed)
+                    if (!data.timed)    // Sets timer if component is new
                         SetTimer(data, GetField(prop, component, enumInt));
 
-                    if (data.timer == data.duration)
+                    if (data.timer == data.duration)    // Confirms end point once transition finishes
                     {
                         SetField(prop, component, enumInt, data.end);
                         continue;
                     }
 
-                    data.timer = Mathf.Clamp(data.timer + Time.deltaTime, 0, data.duration);
+                    data.timer = Mathf.Clamp(data.timer + Time.deltaTime, 0, data.duration);    // Increment timer with deltaTime
 
-                    SetField(prop, component, enumInt, EaseData(data));
+                    SetField(prop, component, enumInt, EaseData(data));    // Sets field value based on new time
                     newTrans.Add(trans.Key, data);
                 }
 
