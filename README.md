@@ -8,24 +8,27 @@ Values are dynamically transitioned so that values will not snap and instead con
 ~~Download from the Asset Store~~  
 View the [ETS Wiki](https://github.com/Misteeps/Ease-Transitions-System/wiki) for usage and documentation  
 
-## Installation
+## [Installation](https://github.com/Misteeps/Ease-Transitions-System/wiki/Setup-Guide)
 Extract files and folders into a Unity project's asset folder  
 
-## Supported Components
+<img align="right" width="434" height="610" src="https://cdn.discordapp.com/attachments/672601762540027904/672720788822163466/Editor_Window_Showcase.png">
+
+## [Supported Components](https://github.com/Misteeps/Ease-Transitions-System/wiki/Supported-Components)
 - Transform
 - Rect Transform
 - Sprite Renderer
 - Image
 - Text
 
-## Editor Window
+## [Editor Window](https://github.com/Misteeps/Ease-Transitions-System/wiki/Editor-Window)
 ETS comes with a custom editor window that can be found under **[Tools/Ease Transitions Editor]**.  
-ETS can be used to apply transitions to your gameobjects with or without the editor window.  
 The custom editor allows for:  
 - Organization of transitions with groups and objects
 - Applying transitions with ease _(ba-dum tsss)_
 - Visualization and testing of one or more transitions simultaneously without using the play button
 - Simple exports to code for more user control
+
+> ETS can be used to apply transitions to your gameobjects with or without the editor window.  
 
 > Warning: Unity has a new UI in 2019.3  
 > Editor Window UI is designed for version 2019.3  
@@ -44,11 +47,12 @@ The custom editor allows for:
 
 ## To Do
 - Full Documentation in wiki:  
-    - [x] Home
-    - [ ] Setup Guide
-    - [ ] How ETS Works
-    - [ ] Supported Components
-    - [ ] Editor Window
+    > - [X] Home
+    > - [X] Setup Guide
+    > - [ ] How ETS Works
+    > - [X] Supported Components
+    > - [ ] Editor Window
+    > - [ ] Scripting API
 
 ## Future Considerations
 - Seperate UI for 2019.2 and older
