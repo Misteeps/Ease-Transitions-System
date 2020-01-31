@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-using static Game.EaseSystem.EaseFunction;
+using static EaseTransitionsSystem.EaseFunction;
 
-namespace Game.EaseSystem
+namespace EaseTransitionsSystem
 {
     #region Components
     // Supported Components and their Fields/Properties
@@ -59,7 +59,7 @@ namespace Game.EaseSystem
 
     #region Data Containers
     // Data container for GameObjects being Transitioned
-    public class TransitionProperties
+    public class TransitionObject
     {
         public GameObject gameObject { get; }
 
@@ -69,12 +69,12 @@ namespace Game.EaseSystem
         public Image image { get; }
         public Text text { get; }
 
-        public Dictionary<Vector2Int, TransitionData> inTrans;
+        public Dictionary<Vector2Int, TransitionValue> values;
 
         public bool pause;
 
 
-        public TransitionProperties(GameObject _gameObject)
+        public TransitionObject(GameObject _gameObject)
         {
             gameObject = _gameObject;
 
@@ -95,7 +95,7 @@ namespace Game.EaseSystem
             if (gameObject.GetComponent<Text>() != null)
                 text = gameObject.GetComponent<Text>();
 
-            inTrans = new Dictionary<Vector2Int, TransitionData>();
+            values = new Dictionary<Vector2Int, TransitionValue>();
 
             pause = false;
         }
@@ -110,26 +110,26 @@ namespace Game.EaseSystem
         public void SetTransition(ComponentTypes component, int enumInt, EaseFunctions ease, float duration, float start, float end) => SetTransition(new Vector2Int((int)component, enumInt), ease, duration, start, end);
         public void SetTransition(Vector2Int enumInt, EaseFunctions ease, float duration, float start, float end, bool RunTransition = true)
         {
-            if (inTrans.ContainsKey(enumInt))
-                inTrans[enumInt] = new TransitionData(ease, duration, start, end / EaseTransitions.animationSpeed);
+            if (values.ContainsKey(enumInt))
+                values[enumInt] = new TransitionValue(ease, duration, start, end / EaseTransitions.animationSpeed);
             else
-                inTrans.Add(enumInt, new TransitionData(ease, duration, start, end / EaseTransitions.animationSpeed));
+                values.Add(enumInt, new TransitionValue(ease, duration, start, end / EaseTransitions.animationSpeed));
 
             if (!EaseTransitions.transitions.Contains(this))
                 EaseTransitions.transitions.Add(this);
         }
 
-        public void ClearAllTransitions() => inTrans.Clear();
+        public void ClearAllTransitions() => values.Clear();
         public void ClearTransition(ComponentTypes component, int enumInt) => ClearTransition(new Vector2Int((int)component, enumInt));
         public void ClearTransition(Vector2Int enumInt)
         {
-            if (inTrans.ContainsKey(enumInt))
-                inTrans.Remove(enumInt);
+            if (values.ContainsKey(enumInt))
+                values.Remove(enumInt);
         }
     }
 
     // Data container for a Transition
-    public class TransitionData
+    public class TransitionValue
     {
         public EaseFunctions ease;
         public float duration { get; }
@@ -141,7 +141,7 @@ namespace Game.EaseSystem
         public float timer;
 
 
-        public TransitionData(EaseFunctions _ease, float _duration, float _start, float _end)
+        public TransitionValue(EaseFunctions _ease, float _duration, float _start, float _end)
         {
             ease = _ease;
             duration = _duration;
@@ -161,20 +161,20 @@ namespace Game.EaseSystem
         #region Get Fields
         // Gets float from a supported Component's Field/Property
 
-        public float GetField(TransitionProperties prop, ComponentTypes component, int enumInt)
+        public float GetField(TransitionObject tObject, ComponentTypes component, int enumInt)
         {
             switch (component)
             {
                 case ComponentTypes.Transform:
-                    return GetField(prop.transform, (TransformFields)enumInt);
+                    return GetField(tObject.transform, (TransformFields)enumInt);
                 case ComponentTypes.SpriteRenderer:
-                    return GetField(prop.spriteRenderer, (SpriteRendererFields)enumInt);
+                    return GetField(tObject.spriteRenderer, (SpriteRendererFields)enumInt);
                 case ComponentTypes.RectTransform:
-                    return GetField(prop.rectTransform, (RectTransformFields)enumInt);
+                    return GetField(tObject.rectTransform, (RectTransformFields)enumInt);
                 case ComponentTypes.Image:
-                    return GetField(prop.image, (ImageFields)enumInt);
+                    return GetField(tObject.image, (ImageFields)enumInt);
                 case ComponentTypes.Text:
-                    return GetField(prop.text, (TextFields)enumInt);
+                    return GetField(tObject.text, (TextFields)enumInt);
             }
             return 0;
         }
@@ -409,24 +409,24 @@ namespace Game.EaseSystem
         #region Set Fields
         // Sets a supported Component's Field/Property to a float
 
-        public void SetField(TransitionProperties prop, ComponentTypes component, int enumInt, float value)
+        public void SetField(TransitionObject tObject, ComponentTypes component, int enumInt, float value)
         {
             switch (component)
             {
                 case ComponentTypes.Transform:
-                    SetField(prop.transform, (TransformFields)enumInt, value);
+                    SetField(tObject.transform, (TransformFields)enumInt, value);
                     break;
                 case ComponentTypes.SpriteRenderer:
-                    SetField(prop.spriteRenderer, (SpriteRendererFields)enumInt, value);
+                    SetField(tObject.spriteRenderer, (SpriteRendererFields)enumInt, value);
                     break;
                 case ComponentTypes.RectTransform:
-                    SetField(prop.rectTransform, (RectTransformFields)enumInt, value);
+                    SetField(tObject.rectTransform, (RectTransformFields)enumInt, value);
                     break;
                 case ComponentTypes.Image:
-                    SetField(prop.image, (ImageFields)enumInt, value);
+                    SetField(tObject.image, (ImageFields)enumInt, value);
                     break;
                 case ComponentTypes.Text:
-                    SetField(prop.text, (TextFields)enumInt, value);
+                    SetField(tObject.text, (TextFields)enumInt, value);
                     break;
             }
         }
@@ -659,10 +659,10 @@ namespace Game.EaseSystem
 
 
         public static float animationSpeed = 1;     // Global speed scale of Transitions
-        public static List<TransitionProperties> transitions = new List<TransitionProperties>();
+        public static List<TransitionObject> transitions = new List<TransitionObject>();
 
         // Returns field value based on the timer
-        private float EaseData(TransitionData data)
+        private float EaseData(TransitionValue data)
         {
             float x = Mathf.InverseLerp(0, data.duration, data.timer);
             float y = Ease(data.ease, x);
@@ -671,7 +671,7 @@ namespace Game.EaseSystem
         }
 
         // Sets timer based on where the field value is in relation to the start and end of transition
-        private void SetTimer(TransitionData data, float value)
+        private void SetTimer(TransitionValue data, float value)
         {
             if (data.start < data.end)
             {
@@ -722,39 +722,39 @@ namespace Game.EaseSystem
 
             for (int p = 0; p < transitions.Count; p++)    // Loops through all objects that need to be transitioned
             {
-                TransitionProperties prop = transitions[p];
+                TransitionObject tObject = transitions[p];
 
-                if (prop.inTrans.Count == 0)    // Removes object if finished transitioning
+                if (tObject.values.Count == 0)    // Removes object if finished transitioning
                 {
-                    transitions.Remove(prop);
+                    transitions.Remove(tObject);
                     continue;
                 }
-                if (prop.pause)    // Ignores object if paused
+                if (tObject.pause)    // Ignores object if paused
                     continue;
                 
-                Dictionary<Vector2Int, TransitionData> newTrans = new Dictionary<Vector2Int, TransitionData>();
-                foreach (KeyValuePair<Vector2Int, TransitionData> trans in prop.inTrans)    // Loops through all transitioning components in object
+                Dictionary<Vector2Int, TransitionValue> newValues = new Dictionary<Vector2Int, TransitionValue>();
+                foreach (KeyValuePair<Vector2Int, TransitionValue> trans in tObject.values)    // Loops through all transitioning components in object
                 {
                     ComponentTypes component = (ComponentTypes)trans.Key.x;
                     int enumInt = trans.Key.y;
-                    TransitionData data = trans.Value;
+                    TransitionValue data = trans.Value;
 
                     if (!data.timed)    // Sets timer if component is new
-                        SetTimer(data, GetField(prop, component, enumInt));
+                        SetTimer(data, GetField(tObject, component, enumInt));
 
                     if (data.timer == data.duration)    // Confirms end point once transition finishes
                     {
-                        SetField(prop, component, enumInt, data.end);
+                        SetField(tObject, component, enumInt, data.end);
                         continue;
                     }
 
                     data.timer = Mathf.Clamp(data.timer + Time.deltaTime, 0, data.duration);    // Increment timer with deltaTime
 
-                    SetField(prop, component, enumInt, EaseData(data));    // Sets field value based on new time
-                    newTrans.Add(trans.Key, data);
+                    SetField(tObject, component, enumInt, EaseData(data));    // Sets field value based on new time
+                    newValues.Add(trans.Key, data);
                 }
 
-                prop.inTrans = newTrans;
+                tObject.values = newValues;
             }
         }
     }

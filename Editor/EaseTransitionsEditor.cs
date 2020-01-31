@@ -8,7 +8,8 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-using Game.EaseSystem;
+using EaseTransitionsSystem;
+using ETS = EaseTransitionsSystem;
 
 #region Data Containers
 [Serializable]
@@ -192,7 +193,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
             copiedObj = null;
         }
 
-        props = new Dictionary<GameObject, TransitionProperties>();
+        tObjects = new Dictionary<GameObject, ETS.TransitionObject>();
         transitioning = false;
     }
     private void SetWindowSize(int width)
@@ -471,6 +472,59 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
     }
 
 
+    #region Transition Testing
+    private Dictionary<GameObject, ETS.TransitionObject> tObjects;
+    private bool transitioning;
+
+    private bool FindEaseTransitons()
+    {
+        if (easeTransitions != null)
+            return true;
+
+        easeTransitions = FindObjectOfType<EaseTransitions>();
+
+        if (easeTransitions == null)
+        {
+            Debug.LogWarning("EaseTransitions Component not found in current scene");
+            return false;
+        }
+
+        return true;
+    }
+    private ETS.TransitionObject CheckProp(GameObject gameObject)
+    {
+        if (!tObjects.ContainsKey(gameObject))
+            tObjects.Add(gameObject, new ETS.TransitionObject(gameObject));
+
+        return tObjects[gameObject];
+    }
+
+    private void SetTransition(GameObject gameObject, ComponentTypes component, int enumInt, EaseFunctions ease, float duration, float start, float end, bool startPosition) => SetTransition(gameObject, new Vector2Int((int)component, enumInt), ease, duration, start, end, startPosition);
+    private void SetTransition(GameObject gameObject, Vector2Int enumInt, EaseFunctions ease, float duration, float start, float end, bool startPosition)
+    {
+        ETS.TransitionObject tObject = CheckProp(gameObject);
+        StopTransition(tObject);
+        if (!FindEaseTransitons())
+            return;
+
+        if (startPosition)
+            easeTransitions.SetField(gameObject, (ComponentTypes)enumInt.x, enumInt.y, start);
+
+        if (tObject.values.ContainsKey(enumInt))
+            tObject.values[enumInt] = new ETS.TransitionValue(ease, duration, start, end);
+        else
+            tObject.values.Add(enumInt, new ETS.TransitionValue(ease, duration, start, end));
+
+        if (!EaseTransitions.transitions.Contains(tObject))
+            EaseTransitions.transitions.Add(tObject);
+
+        transitioning = true;
+    }
+
+    private void StopTransition(ETS.TransitionObject tObject) => EaseTransitions.transitions.Remove(tObject);
+    private void StopAllTransitions() => EaseTransitions.transitions.Clear();
+    #endregion Transition Testing
+
     #region Context Menus
     public void AddItemsToMenu(GenericMenu menu)
     {
@@ -552,7 +606,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
     }
     #endregion GUI Methods
 
-    #region Methods
+    #region Data Methods
     private void SetAddress(ListAddress address, int? group = null, int? obj = null, bool? show = false, bool? save = false)
     {
         if (group != null)
@@ -741,16 +795,16 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         code += WriteLine(0, "using System.Collections;");
         code += WriteLine(0, "using System.Collections.Generic;");
         code += WriteLine(0, "using UnityEngine;");
-        code += WriteLine(0, "using Game.EaseSystem;");
+        code += WriteLine(0, "using EaseTransitionsSystem;");
         code += WriteLine(0, "");
         code += WriteLine(0, "public class " + data.name.Replace(" ", "") + " : MonoBehaviour");
         code += WriteLine(0, "{");
         code += WriteLine(1, "public EaseTransitions ease;");
-        code += WriteLine(1, "private Dictionary<string, TransitionProperties> props;");
+        code += WriteLine(1, "private Dictionary<string, TransitionProperties> tObjects;");
         code += WriteLine(0, "");
         code += WriteLine(1, "private void SetTransitionPropsList()");
         code += WriteLine(1, "{");
-        code += WriteLine(2, "props = new Dictionary<string, TransitionProperties>();");
+        code += WriteLine(2, "tObjects = new Dictionary<string, TransitionProperties>();");
         List<GameObject> gameObjects = new List<GameObject>();
         for (int g = 0; g < data.groups.Count; g++)
             for (int o = 0; o < data.groups[g].objects.Count; o++)
@@ -762,7 +816,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         code += WriteLine(1, "}");
         code += WriteLine(1, "private void SetTransitionProp(string name)");
         code += WriteLine(1, "{");
-        code += WriteLine(2, "if (props.ContainsKey(name))");
+        code += WriteLine(2, "if (tObjects.ContainsKey(name))");
         code += WriteLine(3, "return;");
         code += WriteLine(0, "");
         code += WriteLine(2, "GameObject gameObject = GameObject.Find(name);");
@@ -772,7 +826,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         code += WriteLine(3, "return;");
         code += WriteLine(2, "}");
         code += WriteLine(0, "");
-        code += WriteLine(2, "props.Add(name, new TransitionProperties(gameObject));");
+        code += WriteLine(2, "tObjects.Add(name, new TransitionProperties(gameObject));");
         code += WriteLine(1, "}");
         code += WriteLine(0, "");
         code += WriteLine(1, "private void Start()");
@@ -1309,8 +1363,8 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         if (!FindEaseTransitons())
             return;
 
-        TransitionProperties prop = CheckProp(gameObject);
-        StopTransition(prop);
+        ETS.TransitionObject tObject = CheckProp(gameObject);
+        StopTransition(tObject);
 
         easeTransitions.SetField(gameObject, type, field.enumInt, field.start);
     }
@@ -1321,8 +1375,8 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         if (!FindEaseTransitons())
             return;
 
-        TransitionProperties prop = CheckProp(gameObject);
-        StopTransition(prop);
+        ETS.TransitionObject tObject = CheckProp(gameObject);
+        StopTransition(tObject);
 
         easeTransitions.SetField(gameObject, type, field.enumInt, field.end);
     }
@@ -1334,8 +1388,8 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         if (!FindEaseTransitons())
             return;
 
-        TransitionProperties prop = CheckProp(gameObject);
-        StopTransition(prop);
+        ETS.TransitionObject tObject = CheckProp(gameObject);
+        StopTransition(tObject);
 
         SetTransition(gameObject, type, field.enumInt, field.ease, field.duration, field.start, field.end, startPosition);
     }
@@ -1344,65 +1398,12 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
     {
         string code = "";
 
-        code += Write(indents, "props[\"" + name + "\"].SetTransition(" + GetComponentFieldsEnum(type).ToString().Remove(0, 16) + "." + GetFieldName(type, field.enumInt, false) + ", " + "EaseFunctions." + field.ease + ", " + field.duration + "f, " + field.start + "f, " + field.end + "f);");
+        code += Write(indents, "tObjects[\"" + name + "\"].SetTransition(" + GetComponentFieldsEnum(type).ToString().Remove(0, 22) + "." + GetFieldName(type, field.enumInt, false) + ", " + "EaseFunctions." + field.ease + ", " + field.duration + "f, " + field.start + "f, " + field.end + "f);");
 
         return code;
     }
     #endregion Fields
-
-    #region Transition Testing
-    private Dictionary<GameObject, TransitionProperties> props;
-    private bool transitioning;
-
-    private bool FindEaseTransitons()
-    {
-        if (easeTransitions != null)
-            return true;
-
-        easeTransitions = FindObjectOfType<EaseTransitions>();
-
-        if (easeTransitions == null)
-        {
-            Debug.LogWarning("EaseTransitions Component not found in current scene");
-            return false;
-        }
-
-        return true;
-    }
-    private TransitionProperties CheckProp(GameObject gameObject)
-    {
-        if (!props.ContainsKey(gameObject))
-            props.Add(gameObject, new TransitionProperties(gameObject));
-
-        return props[gameObject];
-    }
-
-    private void SetTransition(GameObject gameObject, ComponentTypes component, int enumInt, EaseFunctions ease, float duration, float start, float end, bool startPosition) => SetTransition(gameObject, new Vector2Int((int)component, enumInt), ease, duration, start, end, startPosition);
-    private void SetTransition(GameObject gameObject, Vector2Int enumInt, EaseFunctions ease, float duration, float start, float end, bool startPosition)
-    {
-        TransitionProperties prop = CheckProp(gameObject);
-        StopTransition(prop);
-        if (!FindEaseTransitons())
-            return;
-
-        if (startPosition)
-            easeTransitions.SetField(gameObject, (ComponentTypes)enumInt.x, enumInt.y, start);
-
-        if (prop.inTrans.ContainsKey(enumInt))
-            prop.inTrans[enumInt] = new TransitionData(ease, duration, start, end);
-        else
-            prop.inTrans.Add(enumInt, new TransitionData(ease, duration, start, end));
-
-        if (!EaseTransitions.transitions.Contains(prop))
-            EaseTransitions.transitions.Add(prop);
-
-        transitioning = true;
-    }
-
-    private void StopTransition(TransitionProperties prop) => EaseTransitions.transitions.Remove(prop);
-    private void StopAllTransitions() => EaseTransitions.transitions.Clear();
-    #endregion Transition Testing
-    #endregion Methods
+    #endregion Data Methods
 
 
     private void Update()
