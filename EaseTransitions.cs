@@ -111,12 +111,12 @@ namespace EaseTransitionsSystem
         public void SetTransition(Vector2Int enumInt, EaseFunctions ease, float duration, float start, float end, bool RunTransition = true)
         {
             if (values.ContainsKey(enumInt))
-                values[enumInt] = new TransitionValue(ease, duration, start, end / EaseTransitions.animationSpeed);
+                values[enumInt] = new TransitionValue(ease, duration, start, end);
             else
-                values.Add(enumInt, new TransitionValue(ease, duration, start, end / EaseTransitions.animationSpeed));
+                values.Add(enumInt, new TransitionValue(ease, duration, start, end));
 
-            if (!EaseTransitions.transitions.Contains(this))
-                EaseTransitions.transitions.Add(this);
+            if (!EaseTransitions.tObjects.Contains(this))
+                EaseTransitions.tObjects.Add(this);
         }
 
         public void ClearAllTransitions() => values.Clear();
@@ -657,9 +657,9 @@ namespace EaseTransitionsSystem
         }
         #endregion Set Fields
 
-
-        public static float animationSpeed = 1;     // Global speed scale of Transitions
-        public static List<TransitionObject> transitions = new List<TransitionObject>();
+        
+        public static List<TransitionObject> tObjects = new List<TransitionObject>();
+        public float timeScale = 1;
 
         // Returns field value based on the timer
         private float EaseData(TransitionValue data)
@@ -717,16 +717,16 @@ namespace EaseTransitionsSystem
 
         private void Update()
         {
-            if (transitions.Count == 0)
+            if (tObjects.Count == 0)
                 return;
 
-            for (int p = 0; p < transitions.Count; p++)    // Loops through all objects that need to be transitioned
+            for (int p = 0; p < tObjects.Count; p++)    // Loops through all objects that need to be transitioned
             {
-                TransitionObject tObject = transitions[p];
+                TransitionObject tObject = tObjects[p];
 
                 if (tObject.values.Count == 0)    // Removes object if finished transitioning
                 {
-                    transitions.Remove(tObject);
+                    tObjects.Remove(tObject);
                     continue;
                 }
                 if (tObject.pause)    // Ignores object if paused
@@ -748,7 +748,7 @@ namespace EaseTransitionsSystem
                         continue;
                     }
 
-                    data.timer = Mathf.Clamp(data.timer + Time.deltaTime, 0, data.duration);    // Increment timer with deltaTime
+                    data.timer = Mathf.Clamp(data.timer + (Time.deltaTime * timeScale), 0, data.duration);    // Increment timer with time between frames * time scaler 
 
                     SetField(tObject, component, enumInt, EaseData(data));    // Sets field value based on new time
                     newValues.Add(trans.Key, data);

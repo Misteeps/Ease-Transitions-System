@@ -169,7 +169,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         {
             EaseTransitions[] eases = FindObjectsOfType<EaseTransitions>();
             for (int e = 0; e < eases.Length; e++)
-                EaseTransitions.transitions.Clear();
+                EaseTransitions.tObjects.Clear();
 
             Initialize(true);
         }
@@ -515,14 +515,14 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         else
             tObject.values.Add(enumInt, new ETS.TransitionValue(ease, duration, start, end));
 
-        if (!EaseTransitions.transitions.Contains(tObject))
-            EaseTransitions.transitions.Add(tObject);
+        if (!EaseTransitions.tObjects.Contains(tObject))
+            EaseTransitions.tObjects.Add(tObject);
 
         transitioning = true;
     }
 
-    private void StopTransition(ETS.TransitionObject tObject) => EaseTransitions.transitions.Remove(tObject);
-    private void StopAllTransitions() => EaseTransitions.transitions.Clear();
+    private void StopTransition(ETS.TransitionObject tObject) => EaseTransitions.tObjects.Remove(tObject);
+    private void StopAllTransitions() => EaseTransitions.tObjects.Clear();
     #endregion Transition Testing
 
     #region Context Menus
@@ -1413,7 +1413,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
         if (!transitioning)
             return;
-        if (EaseTransitions.transitions.Count == 0)
+        if (EaseTransitions.tObjects.Count == 0)
             transitioning = false;
 
         EditorApplication.QueuePlayerLoopUpdate();
@@ -1777,7 +1777,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             GUILayout.EndHorizontal();
 
                             GUILayout.BeginHorizontal();
-                            EditorGUILayout.LabelField("Transitions : " + EaseTransitions.transitions.Count, GUILayout.Width(149));
+                            EditorGUILayout.LabelField("Transitions : " + EaseTransitions.tObjects.Count, GUILayout.Width(149));
                             if (GUILayout.Button("Stop All Transitions"))
                                 StopAllTransitions();
                             GUILayout.EndHorizontal();
@@ -2000,7 +2000,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             GUILayout.Space(4);
 
                             GUILayout.BeginHorizontal();
-                            EditorGUILayout.LabelField("Transitions : " + EaseTransitions.transitions.Count, GUILayout.Width(149));
+                            EditorGUILayout.LabelField("Transitions : " + EaseTransitions.tObjects.Count, GUILayout.Width(149));
                             if (GUILayout.Button("Stop All Transitions"))
                                 StopAllTransitions();
                             GUILayout.EndHorizontal();
@@ -2223,7 +2223,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             GUILayout.Space(4);
 
                             GUILayout.BeginHorizontal();
-                            EditorGUILayout.LabelField("Transitions : " + EaseTransitions.transitions.Count, GUILayout.Width(149));
+                            EditorGUILayout.LabelField("Transitions : " + EaseTransitions.tObjects.Count, GUILayout.Width(149));
                             if (GUILayout.Button("Stop All Transitions"))
                                 StopAllTransitions();
                             GUILayout.EndHorizontal();
