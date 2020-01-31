@@ -1344,7 +1344,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
     {
         string code = "";
 
-        code += Write(indents, "props[\"" + name + "\"].SetTransition(" + GetComponentFieldsEnum(type).ToString().Remove(0, 21) + "." + GetFieldName(type, field.enumInt, false) + ", " + "EaseFunctions." + field.ease + ", " + field.duration + ", " + field.start + ", " + field.end + ");");
+        code += Write(indents, "props[\"" + name + "\"].SetTransition(" + GetComponentFieldsEnum(type).ToString().Remove(0, 16) + "." + GetFieldName(type, field.enumInt, false) + ", " + "EaseFunctions." + field.ease + ", " + field.duration + "f, " + field.start + "f, " + field.end + "f);");
 
         return code;
     }

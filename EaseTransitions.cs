@@ -26,7 +26,7 @@ namespace Game.EaseSystem
     public enum SpriteRendererFields
     {
         ColorRed, ColorGreen, ColorBlue, ColorAlpha,
-        SizeX,SizeY
+        SizeX, SizeY
     }
     public enum RectTransformFields
     {
