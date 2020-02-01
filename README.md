@@ -11,12 +11,13 @@ View the [ETS Wiki](https://github.com/Misteeps/Ease-Transitions-System/wiki) fo
 ## [Installation](https://github.com/Misteeps/Ease-Transitions-System/wiki/Setup-Guide)
 Extract files and folders into a Unity project's asset folder  
 
+## [Supported Components](https://github.com/Misteeps/Ease-Transitions-System/wiki/Supported-Components)
+
 <img align="right" width="434" height="610" src="https://cdn.discordapp.com/attachments/672601762540027904/672720788822163466/Editor_Window_Showcase.png">
 
-## [Supported Components](https://github.com/Misteeps/Ease-Transitions-System/wiki/Supported-Components)
 - Transform
-- Rect Transform
 - Sprite Renderer
+- Rect Transform
 - Image
 - Text
 
@@ -45,14 +46,21 @@ The custom editor allows for:
 >- Select transition options and add components to transition
 >- Copy templated code and paste into game code
 
+## Examples
+
+<img align="middle" width="187" height="419" src="https://cdn.discordapp.com/attachments/672601762540027904/673182066975834141/Transition_Example.gif">
+
+---  
+More examples in progress...  
+
 ## To Do
 - Full Documentation in wiki:  
-    > - [X] Home
-    > - [X] Setup Guide
-    > - [ ] How ETS Works
-    > - [X] Supported Components
-    > - [ ] Editor Window
-    > - [ ] Scripting API
+    - [X] Home
+    - [X] Setup Guide
+    - [X] How ETS Works
+    - [X] Supported Components
+    - [ ] Editor Window
+    - [ ] Scripting API
 
 ## Future Considerations
 - Seperate UI for 2019.2 and older
