@@ -399,8 +399,6 @@ namespace EaseTransitionsSystem
         }
         #endregion Exponential
 
-        // Inverse Functions WIP
-
         #region Elastic
         static private float ElasticIn(float x)
         {
@@ -418,6 +416,7 @@ namespace EaseTransitionsSystem
             return 0.5f * (Mathf.Sin(-13 * (Mathf.PI / 2) * ((2 * x - 1) + 1)) * Mathf.Pow(2, -10 * (2 * x - 1)) + 2);
         }
 
+        // Inverse Functions don't exist.
         static private float ElasticInInverse(float x)
         {
             return x;
@@ -452,6 +451,7 @@ namespace EaseTransitionsSystem
             return 0.5f * (1 - (x * x * x - x * Mathf.Sin(x * Mathf.PI))) + 0.5f;
         }
 
+        // Inverse Functions don't exist.
         static private float BackInInverse(float x)
         {
             return x;
@@ -490,6 +490,7 @@ namespace EaseTransitionsSystem
             return 0.5f * BounceOut(x * 2 - 1) + 0.5f;
         }
 
+        // Inverse Functions don't exist.
         static private float BounceInInverse(float x)
         {
             return x;

@@ -658,61 +658,63 @@ namespace EaseTransitionsSystem
         #endregion Set Fields
 
         
-        public static List<TransitionObject> tObjects = new List<TransitionObject>();
-        public float timeScale = 1;
+        public static List<TransitionObject> tObjects = new List<TransitionObject>();    // The list that marks tObjects for transitioning
+        public float timeScale = 1;    // Scales global time
 
         // Returns field value based on the timer
-        private float EaseData(TransitionValue data)
+        private float EaseData(TransitionValue tValue)
         {
-            float x = Mathf.InverseLerp(0, data.duration, data.timer);
-            float y = Ease(data.ease, x);
+            float x = Mathf.InverseLerp(0, tValue.duration, tValue.timer);
+            float y = Ease(tValue.ease, x);
 
-            return Mathf.LerpUnclamped(data.start, data.end, y);
+            return Mathf.LerpUnclamped(tValue.start, tValue.end, y);
         }
 
         // Sets timer based on where the field value is in relation to the start and end of transition
-        private void SetTimer(TransitionValue data, float value)
+        private void SetTimer(TransitionValue tValue, float value)
         {
-            if (data.start < data.end)
+            if (tValue.start < tValue.end)
             {
-                if (value < data.end)
+                if (value < tValue.end)
                 {
-                    if (value > data.start)
+                    if (value > tValue.start)
                     { }
                     else
-                        data.start = value;
+                        tValue.start = value;
                 }
-                else if (value > data.end)
+                else if (value > tValue.end)
                 {
-                    if (value < data.end + (data.end - data.start))
-                        data.start = data.end + (data.end - data.start);
+                    if (value < tValue.end + (tValue.end - tValue.start))
+                        tValue.start = tValue.end + (tValue.end - tValue.start);
                     else
-                        data.start = value;
+                        tValue.start = value;
                 }
             }
             else
             {
-                if (value > data.end)
+                if (value > tValue.end)
                 {
-                    if (value < data.start)
+                    if (value < tValue.start)
                     { }
                     else
-                        data.start = value;
+                        tValue.start = value;
                 }
-                else if (value < data.end)
+                else if (value < tValue.end)
                 {
-                    if (value > data.end - (data.start - data.end))
-                        data.start = data.end - (data.start - data.end);
+                    if (value > tValue.end - (tValue.start - tValue.end))
+                        tValue.start = tValue.end - (tValue.start - tValue.end);
                     else
-                        data.start = value;
+                        tValue.start = value;
                 }
             }
 
-            float y = Mathf.InverseLerp(data.start, data.end, value);
-            float x = EaseInverse(data.ease, y);
+            float y = Mathf.InverseLerp(tValue.start, tValue.end, value);
+            float x = EaseInverse(tValue.ease, y);
 
-            data.timer = Mathf.Lerp(0, data.duration, x);
-            data.timed = true;
+            tValue.timer = Mathf.Lerp(0, tValue.duration, x);
+            tValue.timed = true;
+
+            //Debug.Log(tValue.start + " > " + tValue.end + " [ " + value + "] = [" + y + "," + x + "] = " + tValue.timer);
         }
 
         private void Update()
@@ -720,7 +722,7 @@ namespace EaseTransitionsSystem
             if (tObjects.Count == 0)
                 return;
 
-            for (int p = 0; p < tObjects.Count; p++)    // Loops through all objects that need to be transitioned
+            for (int p = 0; p < tObjects.Count; p++)    // Iterates through all objects that need to be transitioned
             {
                 TransitionObject tObject = tObjects[p];
 
@@ -733,25 +735,25 @@ namespace EaseTransitionsSystem
                     continue;
                 
                 Dictionary<Vector2Int, TransitionValue> newValues = new Dictionary<Vector2Int, TransitionValue>();
-                foreach (KeyValuePair<Vector2Int, TransitionValue> trans in tObject.values)    // Loops through all transitioning components in object
+                foreach (KeyValuePair<Vector2Int, TransitionValue> kvp in tObject.values)    // Iterates through all transitioning components in object
                 {
-                    ComponentTypes component = (ComponentTypes)trans.Key.x;
-                    int enumInt = trans.Key.y;
-                    TransitionValue data = trans.Value;
+                    ComponentTypes component = (ComponentTypes)kvp.Key.x;
+                    int enumInt = kvp.Key.y;
+                    TransitionValue tValue = kvp.Value;
 
-                    if (!data.timed)    // Sets timer if component is new
-                        SetTimer(data, GetField(tObject, component, enumInt));
+                    if (!tValue.timed)    // Sets timer if tValue is new
+                        SetTimer(tValue, GetField(tObject, component, enumInt));
 
-                    if (data.timer == data.duration)    // Confirms end point once transition finishes
+                    if (tValue.timer == tValue.duration)    // Confirms end point once transition finishes
                     {
-                        SetField(tObject, component, enumInt, data.end);
+                        SetField(tObject, component, enumInt, tValue.end);
                         continue;
                     }
 
-                    data.timer = Mathf.Clamp(data.timer + (Time.deltaTime * timeScale), 0, data.duration);    // Increment timer with time between frames * time scaler 
+                    tValue.timer = Mathf.Clamp(tValue.timer + (Time.unscaledDeltaTime * timeScale), 0, tValue.duration);    // Increment timer with time between frames * time scaler 
 
-                    SetField(tObject, component, enumInt, EaseData(data));    // Sets field value based on new time
-                    newValues.Add(trans.Key, data);
+                    SetField(tObject, component, enumInt, EaseData(tValue));    // Sets field value based on new time
+                    newValues.Add(kvp.Key, tValue);
                 }
 
                 tObject.values = newValues;

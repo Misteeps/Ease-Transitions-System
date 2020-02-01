@@ -795,16 +795,17 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         code += WriteLine(0, "using System.Collections;");
         code += WriteLine(0, "using System.Collections.Generic;");
         code += WriteLine(0, "using UnityEngine;");
+        code += WriteLine(0, "using UnityEngine.UI;");
         code += WriteLine(0, "using EaseTransitionsSystem;");
         code += WriteLine(0, "");
         code += WriteLine(0, "public class " + data.name.Replace(" ", "") + " : MonoBehaviour");
         code += WriteLine(0, "{");
         code += WriteLine(1, "public EaseTransitions ease;");
-        code += WriteLine(1, "private Dictionary<string, TransitionProperties> tObjects;");
+        code += WriteLine(1, "private Dictionary<string, TransitionObject> tObjects;");
         code += WriteLine(0, "");
         code += WriteLine(1, "private void SetTransitionPropsList()");
         code += WriteLine(1, "{");
-        code += WriteLine(2, "tObjects = new Dictionary<string, TransitionProperties>();");
+        code += WriteLine(2, "tObjects = new Dictionary<string, TransitionObject>();");
         List<GameObject> gameObjects = new List<GameObject>();
         for (int g = 0; g < data.groups.Count; g++)
             for (int o = 0; o < data.groups[g].objects.Count; o++)
@@ -826,7 +827,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         code += WriteLine(3, "return;");
         code += WriteLine(2, "}");
         code += WriteLine(0, "");
-        code += WriteLine(2, "tObjects.Add(name, new TransitionProperties(gameObject));");
+        code += WriteLine(2, "tObjects.Add(name, new TransitionObject(gameObject));");
         code += WriteLine(1, "}");
         code += WriteLine(0, "");
         code += WriteLine(1, "private void Start()");
