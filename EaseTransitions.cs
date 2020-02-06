@@ -101,14 +101,14 @@ namespace EaseTransitionsSystem
         }
 
 
-        public void SetTransition(TransformFields field, EaseFunctions ease, EaseDirection direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Transform, (int)field), ease, direction, duration, start, end);
-        public void SetTransition(SpriteRendererFields field, EaseFunctions ease, EaseDirection direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.SpriteRenderer, (int)field), ease, direction, duration, start, end);
-        public void SetTransition(RectTransformFields field, EaseFunctions ease, EaseDirection direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.RectTransform, (int)field), ease, direction, duration, start, end);
-        public void SetTransition(ImageFields field, EaseFunctions ease, EaseDirection direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Image, (int)field), ease, direction, duration, start, end);
-        public void SetTransition(TextFields field, EaseFunctions ease, EaseDirection direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Text, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(TransformFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Transform, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(SpriteRendererFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.SpriteRenderer, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(RectTransformFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.RectTransform, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(ImageFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Image, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(TextFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Text, (int)field), ease, direction, duration, start, end);
 
-        public void SetTransition(ComponentTypes component, int enumInt, EaseFunctions ease, EaseDirection direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)component, enumInt), ease, direction, duration, start, end);
-        public void SetTransition(Vector2Int enumInt, EaseFunctions ease, EaseDirection direction, float duration, float start, float end)
+        public void SetTransition(ComponentTypes component, int enumInt, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)component, enumInt), ease, direction, duration, start, end);
+        public void SetTransition(Vector2Int enumInt, EaseFunctions ease, EaseDirections direction, float duration, float start, float end)
         {
             if (values.ContainsKey(enumInt))
                 values[enumInt] = new TransitionValue(ease, direction, duration, start, end);
@@ -140,7 +140,7 @@ namespace EaseTransitionsSystem
     public class TransitionValue
     {
         public EaseFunctions ease;
-        public EaseDirection direction;
+        public EaseDirections direction;
         public float duration { get; }
 
         public float start { get; set; }
@@ -150,7 +150,7 @@ namespace EaseTransitionsSystem
         public float timer;
 
 
-        public TransitionValue(EaseFunctions _ease, EaseDirection _direction, float _duration, float _start, float _end)
+        public TransitionValue(EaseFunctions _ease, EaseDirections _direction, float _duration, float _start, float _end)
         {
             ease = _ease;
             direction = _direction;

@@ -53,7 +53,7 @@ public class TransitionObject
 
     public bool singleEase;
     public EaseFunctions ease;
-    public EaseDirection direction;
+    public EaseDirections direction;
     public float duration;
 
     public List<TransitionComponent> components;
@@ -104,7 +104,7 @@ public class TransitionField
     public int enumInt;
 
     public EaseFunctions ease;
-    public EaseDirection direction;
+    public EaseDirections direction;
     public float duration;
 
     public float start;
@@ -501,8 +501,8 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         return tObjects[gameObject];
     }
 
-    private void SetTransition(GameObject gameObject, ComponentTypes component, int enumInt, EaseFunctions ease, EaseDirection direction, float duration, float start, float end, bool startPosition) => SetTransition(gameObject, new Vector2Int((int)component, enumInt), ease, direction, duration, start, end, startPosition);
-    private void SetTransition(GameObject gameObject, Vector2Int enumInt, EaseFunctions ease, EaseDirection direction, float duration, float start, float end, bool startPosition)
+    private void SetTransition(GameObject gameObject, ComponentTypes component, int enumInt, EaseFunctions ease, EaseDirections direction, float duration, float start, float end, bool startPosition) => SetTransition(gameObject, new Vector2Int((int)component, enumInt), ease, direction, duration, start, end, startPosition);
+    private void SetTransition(GameObject gameObject, Vector2Int enumInt, EaseFunctions ease, EaseDirections direction, float duration, float start, float end, bool startPosition)
     {
         ETS.TransitionObject tObject = CheckTObject(gameObject);
         StopTransition(tObject);
@@ -1093,6 +1093,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
         newObj.singleEase = oldObj.singleEase;
         newObj.ease = oldObj.ease;
+        newObj.direction = oldObj.direction;
         newObj.duration = oldObj.duration;
 
         newObj.components = new List<TransitionComponent>();
@@ -1348,6 +1349,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         newField.enumInt = oldField.enumInt;
 
         newField.ease = oldField.ease;
+        newField.direction = oldField.direction;
         newField.duration = oldField.duration;
 
         newField.start = oldField.start;
@@ -2344,7 +2346,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             GUILayout.BeginHorizontal();
                             GUILayout.Label("Ease Function", GUILayout.Width(124), GUILayout.Height(16));
                             obj.ease = (EaseFunctions)EditorGUILayout.EnumPopup(obj.ease, GUILayout.MinWidth(84));
-                            obj.direction = (EaseDirection)EditorGUILayout.EnumPopup(obj.direction, GUILayout.MinWidth(52));
+                            obj.direction = (EaseDirections)EditorGUILayout.EnumPopup(obj.direction, GUILayout.MinWidth(52));
                             GUILayout.EndHorizontal();
 
                             GUILayout.BeginHorizontal();
@@ -2452,7 +2454,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                                         {
                                             GUILayout.BeginHorizontal();
                                             field.ease = (EaseFunctions)EditorGUILayout.EnumPopup(field.ease, GUILayout.Width(84));
-                                            field.direction = (EaseDirection)EditorGUILayout.EnumPopup(field.direction, GUILayout.Width(52));
+                                            field.direction = (EaseDirections)EditorGUILayout.EnumPopup(field.direction, GUILayout.Width(52));
                                             field.duration = EditorGUILayout.FloatField(field.duration);
                                             GUILayout.Space(-4);
                                             GUILayout.Label("Seconds", GUILayout.Width(52));
