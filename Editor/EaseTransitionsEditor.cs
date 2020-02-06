@@ -512,7 +512,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         if (startPosition)
             easeTransitions.SetField(gameObject, (ComponentTypes)enumInt.x, enumInt.y, start);
 
-        if (tObject.values.ContainsKey(enumInt)) 
+        if (tObject.values.ContainsKey(enumInt))
             tObject.values[enumInt] = new TransitionValue(ease, direction, duration, start, end);
         else
             tObject.values.Add(enumInt, new TransitionValue(ease, direction, duration, start, end));
@@ -1435,7 +1435,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
         EditorApplication.QueuePlayerLoopUpdate();
     }
-    
+
     private void OnGUI()
     {
         GUIStyle bg = new GUIStyle("Box") { margin = new RectOffset(-4, -4, -4, -4), padding = new RectOffset(0, 0, 0, 0) };
@@ -1519,7 +1519,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                         data = (EaseTransitionsData)EditorGUILayout.ObjectField(data, typeof(EaseTransitionsData), false, GUILayout.Height(22));
                         if (data != null)
                             Initialize();
-                        
+
                         GUILayout.EndHorizontal();
                     }
                     #endregion Header
@@ -1739,7 +1739,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                         data = (EaseTransitionsData)EditorGUILayout.ObjectField(data, typeof(EaseTransitionsData), false, GUILayout.Height(22));
                         if (data == null)
                             return;
-                        
+
                         GUILayout.EndHorizontal();
                     }
                     #endregion Header

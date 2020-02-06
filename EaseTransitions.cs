@@ -242,7 +242,7 @@ namespace EaseTransitionsSystem
                     return transform.localRotation.z;
                 case TransformFields.LocalRotationW:
                     return transform.localRotation.w;
-                    
+
                 case TransformFields.EulerAnglesX:
                     return transform.eulerAngles.x;
                 case TransformFields.EulerAnglesY:
@@ -419,6 +419,49 @@ namespace EaseTransitionsSystem
 
         #region Set Fields
         // Sets a supported Component's Field/Property to a float
+
+        public void SetField(TransitionObject tObject, ComponentTypes component, int enumInt, float value)
+        {
+            switch (component)
+            {
+                case ComponentTypes.Transform:
+                    SetField(tObject.transform, (TransformFields)enumInt, value);
+                    break;
+                case ComponentTypes.SpriteRenderer:
+                    SetField(tObject.spriteRenderer, (SpriteRendererFields)enumInt, value);
+                    break;
+                case ComponentTypes.RectTransform:
+                    SetField(tObject.rectTransform, (RectTransformFields)enumInt, value);
+                    break;
+                case ComponentTypes.Image:
+                    SetField(tObject.image, (ImageFields)enumInt, value);
+                    break;
+                case ComponentTypes.Text:
+                    SetField(tObject.text, (TextFields)enumInt, value);
+                    break;
+            }
+        }
+        public void SetField(GameObject obj, ComponentTypes component, int enumInt, float value)
+        {
+            switch (component)
+            {
+                case ComponentTypes.Transform:
+                    SetField(obj.GetComponent<Transform>(), (TransformFields)enumInt, value);
+                    break;
+                case ComponentTypes.SpriteRenderer:
+                    SetField(obj.GetComponent<SpriteRenderer>(), (SpriteRendererFields)enumInt, value);
+                    break;
+                case ComponentTypes.RectTransform:
+                    SetField(obj.GetComponent<RectTransform>(), (RectTransformFields)enumInt, value);
+                    break;
+                case ComponentTypes.Image:
+                    SetField(obj.GetComponent<Image>(), (ImageFields)enumInt, value);
+                    break;
+                case ComponentTypes.Text:
+                    SetField(obj.GetComponent<Text>(), (TextFields)enumInt, value);
+                    break;
+            }
+        }
 
         public void SetField(Transform transform, TransformFields field, float value)
         {
@@ -623,52 +666,9 @@ namespace EaseTransitionsSystem
                     text.color = new Color(text.color.r, text.color.g, text.color.b, value); break;
             }
         }
-
-        public void SetField(TransitionObject tObject, ComponentTypes component, int enumInt, float value)
-        {
-            switch (component)
-            {
-                case ComponentTypes.Transform:
-                    SetField(tObject.transform, (TransformFields)enumInt, value);
-                    break;
-                case ComponentTypes.SpriteRenderer:
-                    SetField(tObject.spriteRenderer, (SpriteRendererFields)enumInt, value);
-                    break;
-                case ComponentTypes.RectTransform:
-                    SetField(tObject.rectTransform, (RectTransformFields)enumInt, value);
-                    break;
-                case ComponentTypes.Image:
-                    SetField(tObject.image, (ImageFields)enumInt, value);
-                    break;
-                case ComponentTypes.Text:
-                    SetField(tObject.text, (TextFields)enumInt, value);
-                    break;
-            }
-        }
-        public void SetField(GameObject obj, ComponentTypes component, int enumInt, float value)
-        {
-            switch (component)
-            {
-                case ComponentTypes.Transform:
-                    SetField(obj.GetComponent<Transform>(), (TransformFields)enumInt, value);
-                    break;
-                case ComponentTypes.SpriteRenderer:
-                    SetField(obj.GetComponent<SpriteRenderer>(), (SpriteRendererFields)enumInt, value);
-                    break;
-                case ComponentTypes.RectTransform:
-                    SetField(obj.GetComponent<RectTransform>(), (RectTransformFields)enumInt, value);
-                    break;
-                case ComponentTypes.Image:
-                    SetField(obj.GetComponent<Image>(), (ImageFields)enumInt, value);
-                    break;
-                case ComponentTypes.Text:
-                    SetField(obj.GetComponent<Text>(), (TextFields)enumInt, value);
-                    break;
-            }
-        }
         #endregion Set Fields
 
-        
+
         public static List<TransitionObject> tObjects = new List<TransitionObject>();    // The list that marks tObjects for transitioning
         public float timeScale = 1;    // Scales global time
 
@@ -744,7 +744,7 @@ namespace EaseTransitionsSystem
                 }
                 if (tObject.pause)    // Ignores object if paused
                     continue;
-                
+
                 Dictionary<Vector2Int, TransitionValue> newValues = new Dictionary<Vector2Int, TransitionValue>();
                 foreach (KeyValuePair<Vector2Int, TransitionValue> kvp in tObject.values)    // Iterates through all transitioning components in object
                 {
