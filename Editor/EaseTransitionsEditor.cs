@@ -53,6 +53,7 @@ public class TransitionObject
 
     public bool singleEase;
     public EaseFunctions ease;
+    public EaseDirection direction;
     public float duration;
 
     public List<TransitionComponent> components;
@@ -103,6 +104,7 @@ public class TransitionField
     public int enumInt;
 
     public EaseFunctions ease;
+    public EaseDirection direction;
     public float duration;
 
     public float start;
@@ -491,7 +493,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
         return true;
     }
-    private ETS.TransitionObject CheckProp(GameObject gameObject)
+    private ETS.TransitionObject CheckTObject(GameObject gameObject)
     {
         if (!tObjects.ContainsKey(gameObject))
             tObjects.Add(gameObject, new ETS.TransitionObject(gameObject));
@@ -499,10 +501,10 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         return tObjects[gameObject];
     }
 
-    private void SetTransition(GameObject gameObject, ComponentTypes component, int enumInt, EaseFunctions ease, float duration, float start, float end, bool startPosition) => SetTransition(gameObject, new Vector2Int((int)component, enumInt), ease, duration, start, end, startPosition);
-    private void SetTransition(GameObject gameObject, Vector2Int enumInt, EaseFunctions ease, float duration, float start, float end, bool startPosition)
+    private void SetTransition(GameObject gameObject, ComponentTypes component, int enumInt, EaseFunctions ease, EaseDirection direction, float duration, float start, float end, bool startPosition) => SetTransition(gameObject, new Vector2Int((int)component, enumInt), ease, direction, duration, start, end, startPosition);
+    private void SetTransition(GameObject gameObject, Vector2Int enumInt, EaseFunctions ease, EaseDirection direction, float duration, float start, float end, bool startPosition)
     {
-        ETS.TransitionObject tObject = CheckProp(gameObject);
+        ETS.TransitionObject tObject = CheckTObject(gameObject);
         StopTransition(tObject);
         if (!FindEaseTransitons())
             return;
@@ -510,10 +512,10 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         if (startPosition)
             easeTransitions.SetField(gameObject, (ComponentTypes)enumInt.x, enumInt.y, start);
 
-        if (tObject.values.ContainsKey(enumInt))
-            tObject.values[enumInt] = new ETS.TransitionValue(ease, duration, start, end);
+        if (tObject.values.ContainsKey(enumInt)) 
+            tObject.values[enumInt] = new TransitionValue(ease, direction, duration, start, end);
         else
-            tObject.values.Add(enumInt, new ETS.TransitionValue(ease, duration, start, end));
+            tObject.values.Add(enumInt, new TransitionValue(ease, direction, duration, start, end));
 
         if (!EaseTransitions.tObjects.Contains(tObject))
             EaseTransitions.tObjects.Add(tObject);
@@ -530,11 +532,9 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
     {
         menu.AddItem(new GUIContent("Refresh Data File"), false, CM_RefreshFile);
         menu.AddItem(new GUIContent("Clear Selected"), false, CM_ClearSelected);
-        menu.AddItem(new GUIContent("Check Object Names"), false, CM_CheckObjectNames);
     }
     private void CM_RefreshFile() => Initialize(true);
     private void CM_ClearSelected() => SetAddress(selected, -1, -1, false, true);
-    private void CM_CheckObjectNames() => MatchObjectNames();
 
     private void CM_CreateGroup() => Add(data.groups, NewName(data.groups), hovered.group + 1, true);
     private void CM_CreateObject() => Add(data.groups[hovered.group].objects, (GameObject)null, hovered.obj + 1, true, true);
@@ -648,7 +648,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         if (selected.group >= data.groups.Count)
         {
             if (log.Value)
-                Debug.Log("Hovered Group out of range. Max value : " + (data.groups.Count - 1) + " | Current value : " + selected.group);
+                Debug.Log("Selected Group out of range. Max value : " + (data.groups.Count - 1) + " | Current value : " + selected.group);
 
             SetAddress(selected, -1, -1);
         }
@@ -660,7 +660,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
             if (selected.obj >= group.objects.Count)
             {
                 if (log.Value)
-                    Debug.Log("Hovered Object out of range. Max value : " + (group.objects.Count - 1) + " | Current value : " + selected.obj);
+                    Debug.Log("Selected Object out of range. Max value : " + (group.objects.Count - 1) + " | Current value : " + selected.obj);
 
                 SetAddress(selected, null, -1);
             }
@@ -733,7 +733,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
             }
         }
     }
-    private void MatchObjectNames(bool? log = true)
+    private void CheckObjectNames(bool? log = true)
     {
         List<string> oldNames = new List<string>();
         List<string> newNames = new List<string>();
@@ -800,10 +800,25 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         code += WriteLine(0, "");
         code += WriteLine(0, "public class " + data.name.Replace(" ", "") + " : MonoBehaviour");
         code += WriteLine(0, "{");
-        code += WriteLine(1, "public EaseTransitions ease;");
+        code += WriteLine(1, "[SerializeField] private EaseTransitions ease;");
         code += WriteLine(1, "private Dictionary<string, TransitionObject> tObjects;");
         code += WriteLine(0, "");
-        code += WriteLine(1, "private void SetTransitionPropsList()");
+        code += WriteLine(1, "private void FindEaseTransitionsClass()");
+        code += WriteLine(1, "{");
+        code += WriteLine(2, "EaseTransitions[] eases = FindObjectsOfType<EaseTransitions>();");
+        code += WriteLine(0, "");
+        code += WriteLine(2, "if (eases.Length == 0)");
+        code += WriteLine(2, "{");
+        code += WriteLine(3, "Debug.LogError(\"EaseTransitions script not found in scene\");");
+        code += WriteLine(3, "return;");
+        code += WriteLine(2, "}");
+        code += WriteLine(2, "else if (eases.Length > 1)");
+        code += WriteLine(3, "Debug.LogWarning(\"Multiple EaseTransitions scripts found in scene, it is recommended to only have one\");");
+        code += WriteLine(0, "");
+        code += WriteLine(2, "ease = eases[0];");
+        code += WriteLine(1, "}");
+        code += WriteLine(0, "");
+        code += WriteLine(1, "private void SetTObjectsList()");
         code += WriteLine(1, "{");
         code += WriteLine(2, "tObjects = new Dictionary<string, TransitionObject>();");
         List<GameObject> gameObjects = new List<GameObject>();
@@ -811,11 +826,11 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
             for (int o = 0; o < data.groups[g].objects.Count; o++)
                 if (!gameObjects.Contains(data.groups[g].objects[o].gameObject))
                 {
-                    code += WriteLine(2, "SetTransitionProp(\"" + data.groups[g].objects[o].name + "\");");
+                    code += WriteLine(2, "SetTObject(\"" + data.groups[g].objects[o].name + "\");");
                     gameObjects.Add(data.groups[g].objects[o].gameObject);
                 }
         code += WriteLine(1, "}");
-        code += WriteLine(1, "private void SetTransitionProp(string name)");
+        code += WriteLine(1, "private void SetTObject(string name)");
         code += WriteLine(1, "{");
         code += WriteLine(2, "if (tObjects.ContainsKey(name))");
         code += WriteLine(3, "return;");
@@ -832,7 +847,8 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         code += WriteLine(0, "");
         code += WriteLine(1, "private void Start()");
         code += WriteLine(1, "{");
-        code += WriteLine(2, "SetTransitionPropsList();");
+        code += WriteLine(2, "FindEaseTransitionsClass();");
+        code += WriteLine(2, "SetTObjectsList();");
         code += WriteLine(1, "}");
         code += WriteLine(0, "");
         for (int g = 0; g < data.groups.Count; g++)
@@ -1364,7 +1380,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         if (!FindEaseTransitons())
             return;
 
-        ETS.TransitionObject tObject = CheckProp(gameObject);
+        ETS.TransitionObject tObject = CheckTObject(gameObject);
         StopTransition(tObject);
 
         easeTransitions.SetField(gameObject, type, field.enumInt, field.start);
@@ -1376,7 +1392,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         if (!FindEaseTransitons())
             return;
 
-        ETS.TransitionObject tObject = CheckProp(gameObject);
+        ETS.TransitionObject tObject = CheckTObject(gameObject);
         StopTransition(tObject);
 
         easeTransitions.SetField(gameObject, type, field.enumInt, field.end);
@@ -1389,17 +1405,17 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         if (!FindEaseTransitons())
             return;
 
-        ETS.TransitionObject tObject = CheckProp(gameObject);
+        ETS.TransitionObject tObject = CheckTObject(gameObject);
         StopTransition(tObject);
 
-        SetTransition(gameObject, type, field.enumInt, field.ease, field.duration, field.start, field.end, startPosition);
+        SetTransition(gameObject, type, field.enumInt, field.ease, field.direction, field.duration, field.start, field.end, startPosition);
     }
 
     private string ExportCode(TransitionField field, string name, ComponentTypes type, int indents)
     {
         string code = "";
 
-        code += Write(indents, "tObjects[\"" + name + "\"].SetTransition(" + GetComponentFieldsEnum(type).ToString().Remove(0, 22) + "." + GetFieldName(type, field.enumInt, false) + ", " + "EaseFunctions." + field.ease + ", " + field.duration + "f, " + field.start + "f, " + field.end + "f);");
+        code += Write(indents, "tObjects[\"" + name + "\"].SetTransition(" + GetComponentFieldsEnum(type).ToString().Remove(0, 22) + "." + GetFieldName(type, field.enumInt, false) + ", EaseFunctions." + field.ease + ", EaseDirections." + field.direction + "," + field.duration + "f, " + field.start + "f, " + field.end + "f);");
 
         return code;
     }
@@ -1776,6 +1792,14 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             if (GUILayout.Button("Find GameObjects"))
                                 FindObjectsInScene();
                             GUILayout.EndHorizontal();
+
+                            GUILayout.BeginHorizontal();
+                            EditorGUILayout.LabelField("", GUILayout.Width(149));
+                            if (GUILayout.Button("Check Object Names"))
+                                CheckObjectNames();
+                            GUILayout.EndHorizontal();
+
+                            GUILayout.Space(4);
 
                             GUILayout.BeginHorizontal();
                             EditorGUILayout.LabelField("Transitions : " + EaseTransitions.tObjects.Count, GUILayout.Width(149));
@@ -2319,7 +2343,8 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
                             GUILayout.BeginHorizontal();
                             GUILayout.Label("Ease Function", GUILayout.Width(124), GUILayout.Height(16));
-                            obj.ease = (EaseFunctions)EditorGUILayout.EnumPopup(obj.ease);
+                            obj.ease = (EaseFunctions)EditorGUILayout.EnumPopup(obj.ease, GUILayout.MinWidth(84));
+                            obj.direction = (EaseDirection)EditorGUILayout.EnumPopup(obj.direction, GUILayout.MinWidth(52));
                             GUILayout.EndHorizontal();
 
                             GUILayout.BeginHorizontal();
@@ -2426,7 +2451,8 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                                         if (!obj.singleEase)
                                         {
                                             GUILayout.BeginHorizontal();
-                                            field.ease = (EaseFunctions)EditorGUILayout.EnumPopup(field.ease, GUILayout.Width(124));
+                                            field.ease = (EaseFunctions)EditorGUILayout.EnumPopup(field.ease, GUILayout.Width(84));
+                                            field.direction = (EaseDirection)EditorGUILayout.EnumPopup(field.direction, GUILayout.Width(52));
                                             field.duration = EditorGUILayout.FloatField(field.duration);
                                             GUILayout.Space(-4);
                                             GUILayout.Label("Seconds", GUILayout.Width(52));
@@ -2435,6 +2461,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                                         else
                                         {
                                             field.ease = obj.ease;
+                                            field.direction = obj.direction;
                                             field.duration = obj.duration;
                                         }
 

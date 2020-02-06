@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-using static EaseTransitionsSystem.EaseFunction;
+using static EaseTransitionsSystem.Ease;
 
 namespace EaseTransitionsSystem
 {
@@ -101,37 +101,46 @@ namespace EaseTransitionsSystem
         }
 
 
-        public void SetTransition(TransformFields field, EaseFunctions ease, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Transform, (int)field), ease, duration, start, end);
-        public void SetTransition(SpriteRendererFields field, EaseFunctions ease, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.SpriteRenderer, (int)field), ease, duration, start, end);
-        public void SetTransition(RectTransformFields field, EaseFunctions ease, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.RectTransform, (int)field), ease, duration, start, end);
-        public void SetTransition(ImageFields field, EaseFunctions ease, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Image, (int)field), ease, duration, start, end);
-        public void SetTransition(TextFields field, EaseFunctions ease, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Text, (int)field), ease, duration, start, end);
+        public void SetTransition(TransformFields field, EaseFunctions ease, EaseDirection direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Transform, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(SpriteRendererFields field, EaseFunctions ease, EaseDirection direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.SpriteRenderer, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(RectTransformFields field, EaseFunctions ease, EaseDirection direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.RectTransform, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(ImageFields field, EaseFunctions ease, EaseDirection direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Image, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(TextFields field, EaseFunctions ease, EaseDirection direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Text, (int)field), ease, direction, duration, start, end);
 
-        public void SetTransition(ComponentTypes component, int enumInt, EaseFunctions ease, float duration, float start, float end) => SetTransition(new Vector2Int((int)component, enumInt), ease, duration, start, end);
-        public void SetTransition(Vector2Int enumInt, EaseFunctions ease, float duration, float start, float end, bool RunTransition = true)
+        public void SetTransition(ComponentTypes component, int enumInt, EaseFunctions ease, EaseDirection direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)component, enumInt), ease, direction, duration, start, end);
+        public void SetTransition(Vector2Int enumInt, EaseFunctions ease, EaseDirection direction, float duration, float start, float end)
         {
             if (values.ContainsKey(enumInt))
-                values[enumInt] = new TransitionValue(ease, duration, start, end);
+                values[enumInt] = new TransitionValue(ease, direction, duration, start, end);
             else
-                values.Add(enumInt, new TransitionValue(ease, duration, start, end));
+                values.Add(enumInt, new TransitionValue(ease, direction, duration, start, end));
 
             if (!EaseTransitions.tObjects.Contains(this))
                 EaseTransitions.tObjects.Add(this);
         }
 
-        public void ClearAllTransitions() => values.Clear();
+
+        public void ClearTransition(TransformFields field) => ClearTransition(new Vector2Int((int)ComponentTypes.Transform, (int)field));
+        public void ClearTransition(SpriteRendererFields field) => ClearTransition(new Vector2Int((int)ComponentTypes.SpriteRenderer, (int)field));
+        public void ClearTransition(RectTransformFields field) => ClearTransition(new Vector2Int((int)ComponentTypes.RectTransform, (int)field));
+        public void ClearTransition(ImageFields field) => ClearTransition(new Vector2Int((int)ComponentTypes.Image, (int)field));
+        public void ClearTransition(TextFields field) => ClearTransition(new Vector2Int((int)ComponentTypes.Text, (int)field));
+
         public void ClearTransition(ComponentTypes component, int enumInt) => ClearTransition(new Vector2Int((int)component, enumInt));
         public void ClearTransition(Vector2Int enumInt)
         {
             if (values.ContainsKey(enumInt))
                 values.Remove(enumInt);
         }
+
+        public void ClearAllTransitions() => values.Clear();
     }
 
     // Data container for a Transition
     public class TransitionValue
     {
         public EaseFunctions ease;
+        public EaseDirection direction;
         public float duration { get; }
 
         public float start { get; set; }
@@ -141,9 +150,10 @@ namespace EaseTransitionsSystem
         public float timer;
 
 
-        public TransitionValue(EaseFunctions _ease, float _duration, float _start, float _end)
+        public TransitionValue(EaseFunctions _ease, EaseDirection _direction, float _duration, float _start, float _end)
         {
             ease = _ease;
+            direction = _direction;
             duration = _duration;
 
             start = _start;
@@ -155,11 +165,12 @@ namespace EaseTransitionsSystem
     }
     #endregion Data Containers
 
+
     [ExecuteInEditMode]
     public class EaseTransitions : MonoBehaviour
     {
         #region Get Fields
-        // Gets float from a supported Component's Field/Property
+        // Gets value from a supported Component's Field/Property
 
         public float GetField(TransitionObject tObject, ComponentTypes component, int enumInt)
         {
@@ -409,49 +420,6 @@ namespace EaseTransitionsSystem
         #region Set Fields
         // Sets a supported Component's Field/Property to a float
 
-        public void SetField(TransitionObject tObject, ComponentTypes component, int enumInt, float value)
-        {
-            switch (component)
-            {
-                case ComponentTypes.Transform:
-                    SetField(tObject.transform, (TransformFields)enumInt, value);
-                    break;
-                case ComponentTypes.SpriteRenderer:
-                    SetField(tObject.spriteRenderer, (SpriteRendererFields)enumInt, value);
-                    break;
-                case ComponentTypes.RectTransform:
-                    SetField(tObject.rectTransform, (RectTransformFields)enumInt, value);
-                    break;
-                case ComponentTypes.Image:
-                    SetField(tObject.image, (ImageFields)enumInt, value);
-                    break;
-                case ComponentTypes.Text:
-                    SetField(tObject.text, (TextFields)enumInt, value);
-                    break;
-            }
-        }
-        public void SetField(GameObject obj, ComponentTypes component, int enumInt, float value)
-        {
-            switch (component)
-            {
-                case ComponentTypes.Transform:
-                    SetField(obj.GetComponent<Transform>(), (TransformFields)enumInt, value);
-                    break;
-                case ComponentTypes.SpriteRenderer:
-                    SetField(obj.GetComponent<SpriteRenderer>(), (SpriteRendererFields)enumInt, value);
-                    break;
-                case ComponentTypes.RectTransform:
-                    SetField(obj.GetComponent<RectTransform>(), (RectTransformFields)enumInt, value);
-                    break;
-                case ComponentTypes.Image:
-                    SetField(obj.GetComponent<Image>(), (ImageFields)enumInt, value);
-                    break;
-                case ComponentTypes.Text:
-                    SetField(obj.GetComponent<Text>(), (TextFields)enumInt, value);
-                    break;
-            }
-        }
-
         public void SetField(Transform transform, TransformFields field, float value)
         {
             switch (field)
@@ -655,6 +623,49 @@ namespace EaseTransitionsSystem
                     text.color = new Color(text.color.r, text.color.g, text.color.b, value); break;
             }
         }
+
+        public void SetField(TransitionObject tObject, ComponentTypes component, int enumInt, float value)
+        {
+            switch (component)
+            {
+                case ComponentTypes.Transform:
+                    SetField(tObject.transform, (TransformFields)enumInt, value);
+                    break;
+                case ComponentTypes.SpriteRenderer:
+                    SetField(tObject.spriteRenderer, (SpriteRendererFields)enumInt, value);
+                    break;
+                case ComponentTypes.RectTransform:
+                    SetField(tObject.rectTransform, (RectTransformFields)enumInt, value);
+                    break;
+                case ComponentTypes.Image:
+                    SetField(tObject.image, (ImageFields)enumInt, value);
+                    break;
+                case ComponentTypes.Text:
+                    SetField(tObject.text, (TextFields)enumInt, value);
+                    break;
+            }
+        }
+        public void SetField(GameObject obj, ComponentTypes component, int enumInt, float value)
+        {
+            switch (component)
+            {
+                case ComponentTypes.Transform:
+                    SetField(obj.GetComponent<Transform>(), (TransformFields)enumInt, value);
+                    break;
+                case ComponentTypes.SpriteRenderer:
+                    SetField(obj.GetComponent<SpriteRenderer>(), (SpriteRendererFields)enumInt, value);
+                    break;
+                case ComponentTypes.RectTransform:
+                    SetField(obj.GetComponent<RectTransform>(), (RectTransformFields)enumInt, value);
+                    break;
+                case ComponentTypes.Image:
+                    SetField(obj.GetComponent<Image>(), (ImageFields)enumInt, value);
+                    break;
+                case ComponentTypes.Text:
+                    SetField(obj.GetComponent<Text>(), (TextFields)enumInt, value);
+                    break;
+            }
+        }
         #endregion Set Fields
 
         
@@ -662,10 +673,10 @@ namespace EaseTransitionsSystem
         public float timeScale = 1;    // Scales global time
 
         // Returns field value based on the timer
-        private float EaseData(TransitionValue tValue)
+        private float EaseValue(TransitionValue tValue)
         {
             float x = Mathf.InverseLerp(0, tValue.duration, tValue.timer);
-            float y = Ease(tValue.ease, x);
+            float y = CalculateEase(tValue.ease, tValue.direction, x);
 
             return Mathf.LerpUnclamped(tValue.start, tValue.end, y);
         }
@@ -709,7 +720,7 @@ namespace EaseTransitionsSystem
             }
 
             float y = Mathf.InverseLerp(tValue.start, tValue.end, value);
-            float x = EaseInverse(tValue.ease, y);
+            float x = CalculateEaseInverse(tValue.ease, tValue.direction, y);
 
             tValue.timer = Mathf.Lerp(0, tValue.duration, x);
             tValue.timed = true;
@@ -752,7 +763,7 @@ namespace EaseTransitionsSystem
 
                     tValue.timer = Mathf.Clamp(tValue.timer + (Time.unscaledDeltaTime * timeScale), 0, tValue.duration);    // Increment timer with time between frames * time scaler 
 
-                    SetField(tObject, component, enumInt, EaseData(tValue));    // Sets field value based on new time
+                    SetField(tObject, component, enumInt, EaseValue(tValue));    // Sets field value based on new time
                     newValues.Add(kvp.Key, tValue);
                 }
 
