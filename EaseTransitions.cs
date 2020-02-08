@@ -136,21 +136,35 @@ namespace EaseTransitionsSystem
         public void ClearAllTransitions() => values.Clear();
     }
 
-    // Data container for a Transition
+    // Data container for a Transitioning number
     public class TransitionValue
     {
         public EaseFunctions ease;
         public EaseDirections direction;
-        public float duration { get; }
+        public float duration;
 
-        public float start { get; set; }
-        public float end { get; }
+        public float start;
+        public float end;
+        public float current;
 
         public bool timed;
         public float timer;
 
 
-        public TransitionValue(EaseFunctions _ease, EaseDirections _direction, float _duration, float _start, float _end)
+        public TransitionValue()
+        {
+            ease = EaseFunctions.Linear;
+            direction = EaseDirections.In;
+            duration = 0;
+
+            start = 0;
+            end = 0;
+            current = 0;
+
+            timed = false;
+            timer = 0;
+        }
+        public TransitionValue(EaseFunctions _ease, EaseDirections _direction, float _duration, float _start, float _end, float? _current = null)
         {
             ease = _ease;
             direction = _direction;
@@ -158,9 +172,35 @@ namespace EaseTransitionsSystem
 
             start = _start;
             end = _end;
+            current = 0;
 
             timed = false;
             timer = 0;
+        }
+
+
+        public void SetTransition(EaseFunctions _ease, EaseDirections _direction, float _duration, float _start, float _end, float? current = null)
+        {
+            ease = _ease;
+            direction = _direction;
+            duration = _duration;
+
+            start = _start;
+            end = _end;
+            if (current == null)
+                current = start;
+
+            timed = false;
+            timer = 0;
+
+            if (!EaseTransitions.tValues.Contains(this))
+                EaseTransitions.tValues.Add(this);
+        }
+
+        public void ClearTransition()
+        {
+            if (EaseTransitions.tValues.Contains(this))
+                EaseTransitions.tValues.Remove(this);
         }
     }
     #endregion Data Containers
@@ -670,6 +710,7 @@ namespace EaseTransitionsSystem
 
 
         public static List<TransitionObject> tObjects = new List<TransitionObject>();    // The list that marks tObjects for transitioning
+        public static List<TransitionValue> tValues = new List<TransitionValue>();    // The list that marks tValues for transitioning
         public float timeScale = 1;    // Scales global time
 
         // Returns field value based on the timer
@@ -730,45 +771,62 @@ namespace EaseTransitionsSystem
 
         private void Update()
         {
-            if (tObjects.Count == 0)
-                return;
-
-            for (int p = 0; p < tObjects.Count; p++)    // Iterates through all objects that need to be transitioned
-            {
-                TransitionObject tObject = tObjects[p];
-
-                if (tObject.values.Count == 0)    // Removes object if finished transitioning
+            if (tObjects.Count != 0)
+                for (int o = 0; o < tObjects.Count; o++)    // Iterates through all tObjects that need to be transitioned
                 {
-                    tObjects.Remove(tObject);
-                    continue;
+                    TransitionObject tObject = tObjects[o];
+
+                    if (tObject.values.Count == 0)    // Removes tObject if finished transitioning
+                    {
+                        tObjects.Remove(tObject);
+                        continue;
+                    }
+                    if (tObject.pause)    // Ignores tObject if paused
+                        continue;
+
+                    Dictionary<Vector2Int, TransitionValue> newValues = new Dictionary<Vector2Int, TransitionValue>();
+                    foreach (KeyValuePair<Vector2Int, TransitionValue> kvp in tObject.values)    // Iterates through all tValues in object
+                    {
+                        ComponentTypes component = (ComponentTypes)kvp.Key.x;
+                        int enumInt = kvp.Key.y;
+                        TransitionValue tValue = kvp.Value;
+
+                        if (!tValue.timed)    // Sets timer if tValue is new
+                            SetTimer(tValue, GetField(tObject, component, enumInt));
+
+                        if (tValue.timer == tValue.duration)    // Confirms end point once transition finishes
+                        {
+                            SetField(tObject, component, enumInt, tValue.end);
+                            continue;
+                        }
+
+                        tValue.timer = Mathf.Clamp(tValue.timer + (Time.unscaledDeltaTime * timeScale), 0, tValue.duration);    // Increment timer with time between frames * time scaler 
+
+                        SetField(tObject, component, enumInt, EaseValue(tValue));    // Sets field value based on new time
+                        newValues.Add(kvp.Key, tValue);
+                    }
+
+                    tObject.values = newValues;
                 }
-                if (tObject.pause)    // Ignores object if paused
-                    continue;
 
-                Dictionary<Vector2Int, TransitionValue> newValues = new Dictionary<Vector2Int, TransitionValue>();
-                foreach (KeyValuePair<Vector2Int, TransitionValue> kvp in tObject.values)    // Iterates through all transitioning components in object
+            if (tValues.Count != 0)
+                for (int v = 0; v < tValues.Count; v++)    // Iterates through all tValues that need to be transitioned
                 {
-                    ComponentTypes component = (ComponentTypes)kvp.Key.x;
-                    int enumInt = kvp.Key.y;
-                    TransitionValue tValue = kvp.Value;
+                    TransitionValue tValue = tValues[v];
 
                     if (!tValue.timed)    // Sets timer if tValue is new
-                        SetTimer(tValue, GetField(tObject, component, enumInt));
+                        SetTimer(tValue, tValue.current);
 
-                    if (tValue.timer == tValue.duration)    // Confirms end point once transition finishes
+                    if (tValue.timer == tValue.duration)    // Confirms end point once transition finishes and removes tValue from list
                     {
-                        SetField(tObject, component, enumInt, tValue.end);
+                        tValue.current = tValue.end;
+                        tValues.Remove(tValue);
                         continue;
                     }
 
                     tValue.timer = Mathf.Clamp(tValue.timer + (Time.unscaledDeltaTime * timeScale), 0, tValue.duration);    // Increment timer with time between frames * time scaler 
-
-                    SetField(tObject, component, enumInt, EaseValue(tValue));    // Sets field value based on new time
-                    newValues.Add(kvp.Key, tValue);
+                    tValue.current = EaseValue(tValue);
                 }
-
-                tObject.values = newValues;
-            }
         }
     }
 }

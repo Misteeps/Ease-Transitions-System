@@ -169,9 +169,12 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
     {
         if (state == PlayModeStateChange.ExitingPlayMode)
         {
-            EaseTransitions[] eases = FindObjectsOfType<EaseTransitions>();
-            for (int e = 0; e < eases.Length; e++)
+            easeTransitions = FindObjectOfType<EaseTransitions>();
+            if (easeTransitions != null)
+            {
                 EaseTransitions.tObjects.Clear();
+                EaseTransitions.tValues.Clear();
+            }
 
             Initialize(true);
         }
