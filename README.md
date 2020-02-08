@@ -5,9 +5,9 @@ Tween 2D and 3D animations quickly with a simple but powerful system that allows
 ETS allows for time based transitions to properties in components _(Position.X value in Transform)_.  
 Values are dynamically transitioned so that values will not snap and instead continue the transition wherever it is currently.
 
-<img align="middle" width="100%" src="https://cdn.discordapp.com/attachments/673843892621148160/675748250984251432/ETS_Showcase_Optimized.gif">
+<img align="middle" width="100%" src="https://cdn.discordapp.com/attachments/673843892621148160/675758612123222016/ETS_Showcase_4MB.gif">
 
-Of course, the gif above was made with ETS.
+Of course, the gif showcase above was made in Unity with ETS.
 
 View the [ETS Wiki](https://github.com/Misteeps/Ease-Transitions-System/wiki) for usage and documentation
 
