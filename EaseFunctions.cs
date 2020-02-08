@@ -5,119 +5,209 @@ using UnityEngine;
 
 namespace EaseTransitionsSystem
 {
-    public enum EaseFunctions
-    {
-        Linear,
-        QuadraticIn, QuadraticOut, QuadraticInOut,
-        CubicIn, CubicOut, CubicInOut,
-        QuarticIn, QuarticOut, QuarticInOut,
-        QuinticIn, QuinticOut, QuinticInOut,
-        SineIn, SineOut, SineInOut,
-        CircularIn, CircularOut, CircularInOut,
-        ExponentialIn, ExponentialOut, ExponentialInOut,
-        ElasticIn, ElasticOut, ElasticInOut,
-        BackIn, BackOut, BackInOut,
-        BounceIn, BounceOut, BounceInOut
-    }
+    public enum EaseFunctions { Linear, Quadratic, Cubic, Quartic, Quintic, Sine, Circular, Exponential, Elastic, Back, Bounce, /*Custom*/ }
+    public enum EaseDirections { In, Out, InOut }
 
-    public static class EaseFunction
+    public static class Ease
     {
-        static public float Ease(EaseFunctions function, float x)
+        static public float CalculateEase(EaseFunctions function, EaseDirections direction, float x)
         {
             switch (function)
             {
-                default:
-
                 case EaseFunctions.Linear: return Linear(x);
 
-                case EaseFunctions.QuadraticIn: return QuadraticIn(x);
-                case EaseFunctions.QuadraticOut: return QuadraticOut(x);
-                case EaseFunctions.QuadraticInOut: return QuadraticInOut(x);
+                case EaseFunctions.Quadratic:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return QuadraticIn(x);
+                        case EaseDirections.Out: return QuadraticOut(x);
+                        case EaseDirections.InOut: return QuadraticInOut(x);
 
-                case EaseFunctions.CubicIn: return CubicIn(x);
-                case EaseFunctions.CubicOut: return CubicOut(x);
-                case EaseFunctions.CubicInOut: return CubicInOut(x);
+                        default: Debug.LogError("Ease Function Enum Out of Bounds Error"); return 0;
+                    }
+                case EaseFunctions.Cubic:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return CubicIn(x);
+                        case EaseDirections.Out: return CubicOut(x);
+                        case EaseDirections.InOut: return CubicInOut(x);
 
-                case EaseFunctions.QuarticIn: return QuarticIn(x);
-                case EaseFunctions.QuarticOut: return QuarticOut(x);
-                case EaseFunctions.QuarticInOut: return QuarticInOut(x);
+                        default: Debug.LogError("Ease Function Enum Out of Bounds Error"); return 0;
+                    }
+                case EaseFunctions.Quartic:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return QuarticIn(x);
+                        case EaseDirections.Out: return QuarticOut(x);
+                        case EaseDirections.InOut: return QuarticInOut(x);
 
-                case EaseFunctions.QuinticIn: return QuinticIn(x);
-                case EaseFunctions.QuinticOut: return QuinticOut(x);
-                case EaseFunctions.QuinticInOut: return QuinticInOut(x);
+                        default: Debug.LogError("Ease Function Enum Out of Bounds Error"); return 0;
+                    }
+                case EaseFunctions.Quintic:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return QuinticIn(x);
+                        case EaseDirections.Out: return QuinticOut(x);
+                        case EaseDirections.InOut: return QuinticInOut(x);
 
-                case EaseFunctions.SineIn: return SineIn(x);
-                case EaseFunctions.SineOut: return SineOut(x);
-                case EaseFunctions.SineInOut: return SineInOut(x);
+                        default: Debug.LogError("Ease Function Enum Out of Bounds Error"); return 0;
+                    }
+                case EaseFunctions.Sine:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return SineIn(x);
+                        case EaseDirections.Out: return SineOut(x);
+                        case EaseDirections.InOut: return SineInOut(x);
 
-                case EaseFunctions.CircularIn: return CircularIn(x);
-                case EaseFunctions.CircularOut: return CircularOut(x);
-                case EaseFunctions.CircularInOut: return CircularInOut(x);
+                        default: Debug.LogError("Ease Function Enum Out of Bounds Error"); return 0;
+                    }
+                case EaseFunctions.Circular:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return CircularIn(x);
+                        case EaseDirections.Out: return CircularOut(x);
+                        case EaseDirections.InOut: return CircularInOut(x);
 
-                case EaseFunctions.ExponentialIn: return ExponentialIn(x);
-                case EaseFunctions.ExponentialOut: return ExponentialOut(x);
-                case EaseFunctions.ExponentialInOut: return ExponentialInOut(x);
+                        default: Debug.LogError("Ease Function Enum Out of Bounds Error"); return 0;
+                    }
+                case EaseFunctions.Exponential:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return ExponentialIn(x);
+                        case EaseDirections.Out: return ExponentialOut(x);
+                        case EaseDirections.InOut: return ExponentialInOut(x);
 
-                case EaseFunctions.ElasticIn: return ElasticIn(x);
-                case EaseFunctions.ElasticOut: return ElasticOut(x);
-                case EaseFunctions.ElasticInOut: return ElasticInOut(x);
+                        default: Debug.LogError("Ease Function Enum Out of Bounds Error"); return 0;
+                    };
+                case EaseFunctions.Elastic:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return ElasticIn(x);
+                        case EaseDirections.Out: return ElasticOut(x);
+                        case EaseDirections.InOut: return ElasticInOut(x);
 
-                case EaseFunctions.BackIn: return BackIn(x);
-                case EaseFunctions.BackOut: return BackOut(x);
-                case EaseFunctions.BackInOut: return BackInOut(x);
+                        default: Debug.LogError("Ease Function Enum Out of Bounds Error"); return 0;
+                    }
+                case EaseFunctions.Back:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return BackIn(x);
+                        case EaseDirections.Out: return BackOut(x);
+                        case EaseDirections.InOut: return BackInOut(x);
 
-                case EaseFunctions.BounceIn: return BounceIn(x);
-                case EaseFunctions.BounceOut: return BounceOut(x);
-                case EaseFunctions.BounceInOut: return BounceInOut(x);
+                        default: Debug.LogError("Ease Function Enum Out of Bounds Error"); return 0;
+                    }
+                case EaseFunctions.Bounce:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return BounceIn(x);
+                        case EaseDirections.Out: return BounceOut(x);
+                        case EaseDirections.InOut: return BounceInOut(x);
+
+                        default: Debug.LogError("Ease Function Enum Out of Bounds Error"); return 0;
+                    }
+
+                default: Debug.LogError("Ease Function Enum Out of Bounds Error"); return 0;
             }
         }
-        static public float EaseInverse(EaseFunctions function, float x)
+        static public float CalculateEaseInverse(EaseFunctions function, EaseDirections direction, float x)
         {
             switch (function)
             {
-                default:
-
                 case EaseFunctions.Linear: return Linear(x);
 
-                case EaseFunctions.QuadraticIn: return QuadraticInInverse(x);
-                case EaseFunctions.QuadraticOut: return QuadraticOutInverse(x);
-                case EaseFunctions.QuadraticInOut: return QuadraticInOutInverse(x);
+                case EaseFunctions.Quadratic:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return QuadraticInInverse(x);
+                        case EaseDirections.Out: return QuadraticOutInverse(x);
+                        case EaseDirections.InOut: return QuadraticInOutInverse(x);
 
-                case EaseFunctions.CubicIn: return CubicInInverse(x);
-                case EaseFunctions.CubicOut: return CubicOutInverse(x);
-                case EaseFunctions.CubicInOut: return CubicInOutInverse(x);
+                        default: Debug.LogError("Ease Function Inverse Enum Out of Bounds Error"); return 0;
+                    }
+                case EaseFunctions.Cubic:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return CubicInInverse(x);
+                        case EaseDirections.Out: return CubicOutInverse(x);
+                        case EaseDirections.InOut: return CubicInOutInverse(x);
 
-                case EaseFunctions.QuarticIn: return QuarticInInverse(x);
-                case EaseFunctions.QuarticOut: return QuarticOutInverse(x);
-                case EaseFunctions.QuarticInOut: return QuarticInOutInverse(x);
+                        default: Debug.LogError("Ease Function Inverse Enum Out of Bounds Error"); return 0;
+                    }
+                case EaseFunctions.Quartic:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return QuarticInInverse(x);
+                        case EaseDirections.Out: return QuarticOutInverse(x);
+                        case EaseDirections.InOut: return QuarticInOutInverse(x);
 
-                case EaseFunctions.QuinticIn: return QuinticInInverse(x);
-                case EaseFunctions.QuinticOut: return QuinticOutInverse(x);
-                case EaseFunctions.QuinticInOut: return QuinticInOutInverse(x);
+                        default: Debug.LogError("Ease Function Inverse Enum Out of Bounds Error"); return 0;
+                    }
+                case EaseFunctions.Quintic:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return QuinticInInverse(x);
+                        case EaseDirections.Out: return QuinticOutInverse(x);
+                        case EaseDirections.InOut: return QuinticInOutInverse(x);
 
-                case EaseFunctions.SineIn: return SineInInverse(x);
-                case EaseFunctions.SineOut: return SineOutInverse(x);
-                case EaseFunctions.SineInOut: return SineInOutInverse(x);
+                        default: Debug.LogError("Ease Function Inverse Enum Out of Bounds Error"); return 0;
+                    }
+                case EaseFunctions.Sine:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return SineInInverse(x);
+                        case EaseDirections.Out: return SineOutInverse(x);
+                        case EaseDirections.InOut: return SineInOutInverse(x);
 
-                case EaseFunctions.CircularIn: return CircularInInverse(x);
-                case EaseFunctions.CircularOut: return CircularOutInverse(x);
-                case EaseFunctions.CircularInOut: return CircularInOutInverse(x);
+                        default: Debug.LogError("Ease Function Inverse Enum Out of Bounds Error"); return 0;
+                    }
+                case EaseFunctions.Circular:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return CircularInInverse(x);
+                        case EaseDirections.Out: return CircularOutInverse(x);
+                        case EaseDirections.InOut: return CircularInOutInverse(x);
 
-                case EaseFunctions.ExponentialIn: return ExponentialInInverse(x);
-                case EaseFunctions.ExponentialOut: return ExponentialOutInverse(x);
-                case EaseFunctions.ExponentialInOut: return ExponentialInOutInverse(x);
+                        default: Debug.LogError("Ease Function Inverse Enum Out of Bounds Error"); return 0;
+                    }
+                case EaseFunctions.Exponential:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return ExponentialInInverse(x);
+                        case EaseDirections.Out: return ExponentialOutInverse(x);
+                        case EaseDirections.InOut: return ExponentialInOutInverse(x);
 
-                case EaseFunctions.ElasticIn: return ElasticInInverse(x);
-                case EaseFunctions.ElasticOut: return ElasticOutInverse(x);
-                case EaseFunctions.ElasticInOut: return ElasticInOutInverse(x);
+                        default: Debug.LogError("Ease Function Inverse Enum Out of Bounds Error"); return 0;
+                    };
+                case EaseFunctions.Elastic:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return ElasticInInverse(x);
+                        case EaseDirections.Out: return ElasticOutInverse(x);
+                        case EaseDirections.InOut: return ElasticInOutInverse(x);
 
-                case EaseFunctions.BackIn: return BackInInverse(x);
-                case EaseFunctions.BackOut: return BackOutInverse(x);
-                case EaseFunctions.BackInOut: return BackInOutInverse(x);
+                        default: Debug.LogError("Ease Function Inverse Enum Out of Bounds Error"); return 0;
+                    }
+                case EaseFunctions.Back:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return BackInInverse(x);
+                        case EaseDirections.Out: return BackOutInverse(x);
+                        case EaseDirections.InOut: return BackInOutInverse(x);
 
-                case EaseFunctions.BounceIn: return BounceInInverse(x);
-                case EaseFunctions.BounceOut: return BounceOutInverse(x);
-                case EaseFunctions.BounceInOut: return BounceInOutInverse(x);
+                        default: Debug.LogError("Ease Function Inverse Enum Out of Bounds Error"); return 0;
+                    }
+                case EaseFunctions.Bounce:
+                    switch (direction)
+                    {
+                        case EaseDirections.In: return BounceInInverse(x);
+                        case EaseDirections.Out: return BounceOutInverse(x);
+                        case EaseDirections.InOut: return BounceInOutInverse(x);
+
+                        default: Debug.LogError("Ease Function Inverse Enum Out of Bounds Error"); return 0;
+                    }
+
+                default: Debug.LogError("Ease Function Inverse Enum Out of Bounds Error"); return 0;
             }
         }
 
