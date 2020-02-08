@@ -1,11 +1,15 @@
 # ETS - Ease Transitions System
 ETS is a tool to easily test and apply [ease](https://easings.net/en) transitions to component values in [Unity](https://unity.com/).  
-Tween 2D and 3D animations quickly with a simple but powerful system that allows for user flexibility.  
+Tween 2D and 3D animations quickly with a simple but powerful system that allows for user flexibility.
 
-ETS allows for time based transitions to individual values in a component _(Position.X value in Transform)_.  
-Values are dynamically transitioned so that values will not snap and instead continue the transition wherever it is currently.  
+ETS allows for time based transitions to properties in components _(Position.X value in Transform)_.  
+Values are dynamically transitioned so that values will not snap and instead continue the transition wherever it is currently.
 
-View the [ETS Wiki](https://github.com/Misteeps/Ease-Transitions-System/wiki) for usage and documentation  
+<img align="middle" width="100%" src="https://cdn.discordapp.com/attachments/673843892621148160/675748250984251432/ETS_Showcase_Optimized.gif">
+
+Of course, the gif above was made with ETS.
+
+View the [ETS Wiki](https://github.com/Misteeps/Ease-Transitions-System/wiki) for usage and documentation
 
 ## Installation
 ~~Download and install straight from the Asset Store.~~  
@@ -35,9 +39,9 @@ ETS comes with a custom editor window that can be found under **[Tools/Ease Tran
 
 The custom editor window allows for:
 - Organization of transitions with groups and objects
-- Applying transitions with ease _(ba-dum tsss)_
-- Visualization and testing of one or more transitions simultaneously without using the play button
-- Exports to code for ultimate user flexibility and customization.
+- Applying transitions quickly with ease _(ba-dum tsss)_
+- Visualization and testing of one or more transitions simultaneously in the editor (without using the play button)
+- Exporting to code easily by displaying template code
 
 Full [Usage and Documentation](https://github.com/Misteeps/Ease-Transitions-System/wiki/Editor-Window).
 
@@ -57,13 +61,9 @@ Full [Usage and Documentation](https://github.com/Misteeps/Ease-Transitions-Syst
 More examples in progress...
 
 ## To Do
-- Full Documentation in wiki:  
-    - [x] Home
-    - [ ] Setup Guide
-    - [x] How ETS Works
-    - [x] Supported Components
-    - [x] Editor Window
-    - [ ] Scripting API
+- [x] Full Documentation in wiki
+- [ ] 3D Examples
+- [ ] Space Mania Example Project
 
 ## Future Considerations
 - Seperate UI for 2019.2 and older
