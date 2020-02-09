@@ -483,16 +483,19 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
     private bool FindEaseTransitons()
     {
-        if (easeTransitions != null)
-            return true;
-
-        easeTransitions = FindObjectOfType<EaseTransitions>();
-
         if (easeTransitions == null)
         {
-            Debug.LogWarning("EaseTransitions Component not found in current scene");
-            return false;
+            easeTransitions = FindObjectOfType<EaseTransitions>();
+
+            if (easeTransitions == null)
+            {
+                Debug.LogError("EaseTransitions Script not found in current scene");
+                return false;
+            }
         }
+
+        if (!easeTransitions.enabled)
+            Debug.LogWarning("EaseTransitions Script is currently disabled. Enable it to transition objects");
 
         return true;
     }
@@ -691,6 +694,9 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
     private void FindObjectsInScene(bool? log = true)
     {
+        if (data == null)
+            return;
+
         List<string> foundObjs = new List<string>();
         List<string> emptyObjs = new List<string>();
 
@@ -1741,9 +1747,15 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                         GUILayout.BeginHorizontal(bg, GUILayout.Height(26));
                         bgColor();
 
-                        data = (EaseTransitionsData)EditorGUILayout.ObjectField(data, typeof(EaseTransitionsData), false, GUILayout.Height(22));
+                        EaseTransitionsData newData = (EaseTransitionsData)EditorGUILayout.ObjectField(data, typeof(EaseTransitionsData), false, GUILayout.Height(22));
                         if (data == null)
                             return;
+                        else if (newData != data)
+                        {
+                            data = newData;
+                            Initialize();
+                            return;
+                        }
 
                         GUILayout.EndHorizontal();
                     }
