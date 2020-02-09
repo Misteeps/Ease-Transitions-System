@@ -3,7 +3,7 @@ ETS is a tool to easily test and apply [ease](https://easings.net/en) transition
 Tween 2D and 3D animations quickly with a simple but powerful system that allows for user flexibility.
 
 ETS allows for time based transitions to properties in components _(Position.X value in Transform)_.  
-Values are dynamically transitioned so that values will not snap and instead continue the transition wherever it is currently.
+Values are dynamically transitioned so that values will not snap and instead continue the transition from anywhere.
 
 <img align="middle" width="100%" src="https://cdn.discordapp.com/attachments/673843892621148160/675758612123222016/ETS_Showcase_4MB.gif">
 
@@ -51,14 +51,26 @@ Full [Usage and Documentation](https://github.com/Misteeps/Ease-Transitions-Syst
 > Editor Window UI is designed for version 2019.3  
 > Editor Window UI for versions 2019.2 and older is different and messy, but will still work
 
-
 ## Examples
 
-<img align="middle" width="30%" src="https://cdn.discordapp.com/attachments/673843892621148160/673935037145808906/Timed_Transition_Example.gif">
+<img align="left" width="20%" src="https://cdn.discordapp.com/attachments/673843892621148160/676080010741809162/Timed_Diamonds.gif">
 
----
+> *Left*  
+> 4 diamonds, each being transitioned from 30 to 0 in 2 seconds.  
+> The timers at the bottom show when each diamond reaches the end.  
+> Diamonds closer to the end take less time than diamonds further from the end.  
+> Diamonds past the start do not take longer than the set duration.
 
-More examples in progress...
+> *Below*  
+> Each ball is transitioned from top to bottom with different ease functions.
+
+<img align="middle" width="70%" src="https://cdn.discordapp.com/attachments/673843892621148160/676096210343297038/Marble_Functions.gif">
+
+***
+
+Space Mania Project Demo coming soon...
+
+More examples coming soon...
 
 ## To Do
 - [x] Full Documentation in wiki
