@@ -5,6 +5,8 @@ Tween 2D and 3D animations quickly with a simple but powerful system that allows
 ETS allows for time based transitions to properties in components _(Position.X value in Transform)_.  
 Values are dynamically transitioned so that values will not snap and instead continue the transition from anywhere.
 
+ETS has a ridiculously low overhead, only containing a single MonoBehaviour Update() to transition all set GameObjects.
+
 <img align="middle" width="100%" src="https://cdn.discordapp.com/attachments/673843892621148160/675758612123222016/ETS_Showcase_4MB.gif">
 
 Of course, the gif showcase above was made in Unity with ETS.
@@ -14,7 +16,7 @@ View the [ETS Wiki](https://github.com/Misteeps/Ease-Transitions-System/wiki) fo
 ## Installation
 ~~Download and install straight from the Asset Store.~~  
 _**or**_  
-Download ~~from releases~~ and extract the **editor folder** and the **two .CS files** into your Unity project's assets folder.
+Download [from releases](https://github.com/Misteeps/Ease-Transitions-System/releases/tag/v1.0) and extract the contents into your Unity project's assets folder.
 
 <img align="middle" width="" src="https://cdn.discordapp.com/attachments/673843892621148160/673926333365223464/Extract_Files.png">
 
@@ -68,9 +70,7 @@ Full [Usage and Documentation](https://github.com/Misteeps/Ease-Transitions-Syst
 
 ***
 
-Space Mania Project Demo coming soon...
-
-More examples coming soon...
+More examples coming eventually...
 
 ## To Do
 - [x] Full Documentation in wiki
