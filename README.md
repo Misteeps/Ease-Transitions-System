@@ -14,7 +14,7 @@ Of course, the gif showcase above was made in Unity with ETS.
 View the [ETS Wiki](https://github.com/Misteeps/Ease-Transitions-System/wiki) for usage and documentation
 
 ## Installation
-~~Download and install straight from the Asset Store.~~  
+[Download and install straight from the Asset Store](https://assetstore.unity.com/packages/slug/162868).  
 _**or**_  
 Download [from releases](https://github.com/Misteeps/Ease-Transitions-System/releases/tag/v1.0) and extract the contents into your Unity project's assets folder.
 
