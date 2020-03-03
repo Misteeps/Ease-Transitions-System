@@ -1227,7 +1227,18 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         return null;
     }
 
-    private string GetFieldName(ComponentTypes type, int enumInt, bool? nicify = true) => GetFieldNames(type, nicify)[enumInt];
+    private string GetFieldName(ComponentTypes type, int enumInt, bool? nicify = true)
+    {
+        string[] names = GetFieldNames(type, nicify);
+
+        if (enumInt >= names.Length)
+        {
+            Debug.LogError("Field name out of range. Please look into the error message for possible a possible fix.\nPlease make a backup for the data file if your transitions need to be saved as you can revert to an older version of ETS.\nThe fix will most likely wipe all transition field info.\nTo Fix: select each transition object and it will catch the serialization error and refresh its fields.");
+            return "";
+        }
+
+        return names[enumInt];
+    }
     private string[] GetFieldNames(ComponentTypes type, bool? nicify = true)
     {
         string[] names = Enum.GetNames(GetComponentFieldsEnum(type));
