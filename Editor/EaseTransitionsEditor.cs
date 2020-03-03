@@ -1190,10 +1190,14 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         {
             case ComponentTypes.Transform:
                 return typeof(Transform);
+            case ComponentTypes.Camera:
+                return typeof(Camera);
             case ComponentTypes.SpriteRenderer:
                 return typeof(SpriteRenderer);
             case ComponentTypes.RectTransform:
                 return typeof(RectTransform);
+            case ComponentTypes.CanvasGroup:
+                return typeof(CanvasGroup);
             case ComponentTypes.Image:
                 return typeof(Image);
             case ComponentTypes.Text:
@@ -1207,10 +1211,14 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         {
             case ComponentTypes.Transform:
                 return typeof(TransformFields);
+            case ComponentTypes.Camera:
+                return typeof(CameraFields);
             case ComponentTypes.SpriteRenderer:
                 return typeof(SpriteRendererFields);
             case ComponentTypes.RectTransform:
                 return typeof(RectTransformFields);
+            case ComponentTypes.CanvasGroup:
+                return typeof(CanvasGroupFields);
             case ComponentTypes.Image:
                 return typeof(ImageFields);
             case ComponentTypes.Text:
