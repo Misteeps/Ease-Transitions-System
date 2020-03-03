@@ -1,3 +1,7 @@
+> ### Warning
+> This branch may have a data serialization conflict with your existing ETS data files when using the editor window.  
+> Please make a backup of your ETS data files before linking them to the editor window.  
+
 # ETS - Ease Transitions System
 ETS is a tool to easily test and apply [ease](https://easings.net/en) transitions to component values in [Unity](https://unity.com/).  
 Tween 2D and 3D animations quickly with a simple but powerful system that allows for user flexibility.
@@ -27,8 +31,10 @@ More installation and setup instructions found in the [Setup Guide](https://gith
 <img align="right" width="50%" src="https://cdn.discordapp.com/attachments/673843892621148160/673963895379066892/Editor_Window_Showcase.png">
 
 - Transform
+- Camera
 - Sprite Renderer
 - Rect Transform
+- CanvasGroup
 - Image
 - Text
 
