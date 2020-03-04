@@ -1422,7 +1422,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         if (!FindEaseTransitons())
             return;
 
-        field.start = easeTransitions.GetField(gameObject, type, field.fieldID);
+        field.start = EaseTransitions.GetField(gameObject, type, field.fieldID);
     }
     private void ImportToEnd(TransitionField field, GameObject gameObject, ComponentTypes type)
     {
@@ -1431,7 +1431,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         if (!FindEaseTransitons())
             return;
 
-        field.end = easeTransitions.GetField(gameObject, type, field.fieldID);
+        field.end = EaseTransitions.GetField(gameObject, type, field.fieldID);
     }
 
     private void SetToStart(TransitionField field, GameObject gameObject, ComponentTypes type)
