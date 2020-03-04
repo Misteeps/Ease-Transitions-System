@@ -11,7 +11,7 @@ namespace EaseTransitionsSystem
     #region Components
     // Supported Components and their Fields/Properties
 
-    public enum ComponentTypes { Transform, SpriteRenderer, RectTransform, Image, Text }
+    public enum ComponentTypes { Transform, Camera, Light, SpriteRenderer, RectTransform, CanvasGroup, Image, Text }
 
     public enum TransformFields
     {
@@ -22,6 +22,17 @@ namespace EaseTransitionsSystem
         EulerAnglesX, EulerAnglesY, EulerAnglesZ,
         LocalEulerAnglesX, LocalEulerAnglesY, LocalEulerAnglesZ,
         LocalScaleX, LocalScaleY, LocalScaleZ
+    }
+    public enum CameraFields
+    {
+        BackgroundColorRed, BackgroundColorGreen, BackgroundColorBlue, BackgroundColorAlpha,
+        FieldOfView, OrthographicSize
+    }
+    public enum LightFields
+    {
+        ColorRed, ColorGreen, ColorBlue, ColorAlpha,
+        Intensity,
+        ShadowStrength
     }
     public enum SpriteRendererFields
     {
@@ -45,6 +56,10 @@ namespace EaseTransitionsSystem
         OffsetMinX, OffsetMinY,
         OffsetMaxX, OffsetMaxY
     }
+    public enum CanvasGroupFields
+    {
+        Alpha
+    }
     public enum ImageFields
     {
         ColorRed, ColorGreen, ColorBlue, ColorAlpha,
@@ -64,8 +79,11 @@ namespace EaseTransitionsSystem
         public GameObject gameObject { get; }
 
         public Transform transform { get; }
+        public Camera camera { get; }
+        public Light light { get; }
         public SpriteRenderer spriteRenderer { get; }
         public RectTransform rectTransform { get; }
+        public CanvasGroup canvasGroup { get; }
         public Image image { get; }
         public Text text { get; }
 
@@ -86,10 +104,16 @@ namespace EaseTransitionsSystem
 
             if (gameObject.GetComponent<Transform>() != null)
                 transform = gameObject.GetComponent<Transform>();
+            if (gameObject.GetComponent<Camera>() != null)
+                camera = gameObject.GetComponent<Camera>();
+            if (gameObject.GetComponent<Light>() != null)
+                light = gameObject.GetComponent<Light>();
             if (gameObject.GetComponent<SpriteRenderer>() != null)
                 spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
             if (gameObject.GetComponent<RectTransform>() != null)
                 rectTransform = gameObject.GetComponent<RectTransform>();
+            if (gameObject.GetComponent<CanvasGroup>() != null)
+                canvasGroup = gameObject.GetComponent<CanvasGroup>();
             if (gameObject.GetComponent<Image>() != null)
                 image = gameObject.GetComponent<Image>();
             if (gameObject.GetComponent<Text>() != null)
@@ -102,18 +126,21 @@ namespace EaseTransitionsSystem
 
 
         public void SetTransition(TransformFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Transform, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(CameraFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Camera, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(LightFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Light, (int)field), ease, direction, duration, start, end);
         public void SetTransition(SpriteRendererFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.SpriteRenderer, (int)field), ease, direction, duration, start, end);
         public void SetTransition(RectTransformFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.RectTransform, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(CanvasGroupFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.CanvasGroup, (int)field), ease, direction, duration, start, end);
         public void SetTransition(ImageFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Image, (int)field), ease, direction, duration, start, end);
         public void SetTransition(TextFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Text, (int)field), ease, direction, duration, start, end);
 
-        public void SetTransition(ComponentTypes component, int enumInt, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)component, enumInt), ease, direction, duration, start, end);
-        public void SetTransition(Vector2Int enumInt, EaseFunctions ease, EaseDirections direction, float duration, float start, float end)
+        public void SetTransition(ComponentTypes component, int fieldID, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)component, fieldID), ease, direction, duration, start, end);
+        public void SetTransition(Vector2Int enumID, EaseFunctions ease, EaseDirections direction, float duration, float start, float end)
         {
-            if (values.ContainsKey(enumInt))
-                values[enumInt] = new TransitionValue(ease, direction, duration, start, end);
+            if (values.ContainsKey(enumID))
+                values[enumID] = new TransitionValue(ease, direction, duration, start, end);
             else
-                values.Add(enumInt, new TransitionValue(ease, direction, duration, start, end));
+                values.Add(enumID, new TransitionValue(ease, direction, duration, start, end));
 
             if (!EaseTransitions.tObjects.Contains(this))
                 EaseTransitions.tObjects.Add(this);
@@ -121,16 +148,19 @@ namespace EaseTransitionsSystem
 
 
         public void ClearTransition(TransformFields field) => ClearTransition(new Vector2Int((int)ComponentTypes.Transform, (int)field));
+        public void ClearTransition(CameraFields field) => ClearTransition(new Vector2Int((int)ComponentTypes.Camera, (int)field));
+        public void ClearTransition(LightFields field) => ClearTransition(new Vector2Int((int)ComponentTypes.Light, (int)field));
         public void ClearTransition(SpriteRendererFields field) => ClearTransition(new Vector2Int((int)ComponentTypes.SpriteRenderer, (int)field));
         public void ClearTransition(RectTransformFields field) => ClearTransition(new Vector2Int((int)ComponentTypes.RectTransform, (int)field));
+        public void ClearTransition(CanvasGroupFields field) => ClearTransition(new Vector2Int((int)ComponentTypes.CanvasGroup, (int)field));
         public void ClearTransition(ImageFields field) => ClearTransition(new Vector2Int((int)ComponentTypes.Image, (int)field));
         public void ClearTransition(TextFields field) => ClearTransition(new Vector2Int((int)ComponentTypes.Text, (int)field));
 
-        public void ClearTransition(ComponentTypes component, int enumInt) => ClearTransition(new Vector2Int((int)component, enumInt));
-        public void ClearTransition(Vector2Int enumInt)
+        public void ClearTransition(ComponentTypes component, int fieldID) => ClearTransition(new Vector2Int((int)component, fieldID));
+        public void ClearTransition(Vector2Int enumID)
         {
-            if (values.ContainsKey(enumInt))
-                values.Remove(enumInt);
+            if (values.ContainsKey(enumID))
+                values.Remove(enumID);
         }
 
         public void ClearAllTransitions() => values.Clear();
@@ -212,37 +242,49 @@ namespace EaseTransitionsSystem
         #region Get Fields
         // Gets value from a supported Component's Field/Property
 
-        public float GetField(TransitionObject tObject, ComponentTypes component, int enumInt)
+        public float GetField(TransitionObject tObject, ComponentTypes component, int fieldID)
         {
             switch (component)
             {
                 case ComponentTypes.Transform:
-                    return GetField(tObject.transform, (TransformFields)enumInt);
+                    return GetField(tObject.transform, (TransformFields)fieldID);
+                case ComponentTypes.Camera:
+                    return GetField(tObject.camera, (CameraFields)fieldID);
+                case ComponentTypes.Light:
+                    return GetField(tObject.light, (LightFields)fieldID);
                 case ComponentTypes.SpriteRenderer:
-                    return GetField(tObject.spriteRenderer, (SpriteRendererFields)enumInt);
+                    return GetField(tObject.spriteRenderer, (SpriteRendererFields)fieldID);
                 case ComponentTypes.RectTransform:
-                    return GetField(tObject.rectTransform, (RectTransformFields)enumInt);
+                    return GetField(tObject.rectTransform, (RectTransformFields)fieldID);
+                case ComponentTypes.CanvasGroup:
+                    return GetField(tObject.canvasGroup, (CanvasGroupFields)fieldID);
                 case ComponentTypes.Image:
-                    return GetField(tObject.image, (ImageFields)enumInt);
+                    return GetField(tObject.image, (ImageFields)fieldID);
                 case ComponentTypes.Text:
-                    return GetField(tObject.text, (TextFields)enumInt);
+                    return GetField(tObject.text, (TextFields)fieldID);
             }
             return 0;
         }
-        public float GetField(GameObject obj, ComponentTypes component, int enumInt)
+        public float GetField(GameObject obj, ComponentTypes component, int fieldID)
         {
             switch (component)
             {
                 case ComponentTypes.Transform:
-                    return GetField(obj.GetComponent<Transform>(), (TransformFields)enumInt);
+                    return GetField(obj.GetComponent<Transform>(), (TransformFields)fieldID);
+                case ComponentTypes.Camera:
+                    return GetField(obj.GetComponent<Camera>(), (CameraFields)fieldID);
+                case ComponentTypes.Light:
+                    return GetField(obj.GetComponent<Light>(), (LightFields)fieldID);
                 case ComponentTypes.SpriteRenderer:
-                    return GetField(obj.GetComponent<SpriteRenderer>(), (SpriteRendererFields)enumInt);
+                    return GetField(obj.GetComponent<SpriteRenderer>(), (SpriteRendererFields)fieldID);
                 case ComponentTypes.RectTransform:
-                    return GetField(obj.GetComponent<RectTransform>(), (RectTransformFields)enumInt);
+                    return GetField(obj.GetComponent<RectTransform>(), (RectTransformFields)fieldID);
+                case ComponentTypes.CanvasGroup:
+                    return GetField(obj.GetComponent<CanvasGroup>(), (CanvasGroupFields)fieldID);
                 case ComponentTypes.Image:
-                    return GetField(obj.GetComponent<Image>(), (ImageFields)enumInt);
+                    return GetField(obj.GetComponent<Image>(), (ImageFields)fieldID);
                 case ComponentTypes.Text:
-                    return GetField(obj.GetComponent<Text>(), (TextFields)enumInt);
+                    return GetField(obj.GetComponent<Text>(), (TextFields)fieldID);
             }
             return 0;
         }
@@ -303,6 +345,48 @@ namespace EaseTransitionsSystem
                     return transform.localScale.y;
                 case TransformFields.LocalScaleZ:
                     return transform.localScale.z;
+            }
+            return 0;
+        }
+        public float GetField(Camera camera, CameraFields field)
+        {
+            switch (field)
+            {
+                case CameraFields.BackgroundColorRed:
+                    return camera.backgroundColor.r;
+                case CameraFields.BackgroundColorGreen:
+                    return camera.backgroundColor.g;
+                case CameraFields.BackgroundColorBlue:
+                    return camera.backgroundColor.b;
+                case CameraFields.BackgroundColorAlpha:
+                    return camera.backgroundColor.a;
+
+                case CameraFields.FieldOfView:
+                    return camera.fieldOfView;
+                case CameraFields.OrthographicSize:
+                    return camera.orthographicSize;
+            }
+            return 0;
+        }
+        public float GetField(Light light, LightFields field)
+        {
+            switch (field)
+            {
+                case LightFields.ColorRed:
+                    return light.color.r;
+                case LightFields.ColorGreen:
+                    return light.color.g;
+                case LightFields.ColorBlue:
+                    return light.color.b;
+                case LightFields.ColorAlpha:
+                    return light.color.a;
+
+                case LightFields.Intensity:
+                    return light.intensity;
+
+                case LightFields.ShadowStrength:
+                    return light.shadowStrength;
+
             }
             return 0;
         }
@@ -422,6 +506,15 @@ namespace EaseTransitionsSystem
             }
             return 0;
         }
+        public float GetField(CanvasGroup canvasGroup, CanvasGroupFields field)
+        {
+            switch (field)
+            {
+                case CanvasGroupFields.Alpha:
+                    return canvasGroup.alpha;
+            }
+            return 0;
+        }
         public float GetField(Image image, ImageFields field)
         {
             switch (field)
@@ -460,45 +553,63 @@ namespace EaseTransitionsSystem
         #region Set Fields
         // Sets a supported Component's Field/Property to a float
 
-        public void SetField(TransitionObject tObject, ComponentTypes component, int enumInt, float value)
+        public void SetField(TransitionObject tObject, ComponentTypes component, int fieldID, float value)
         {
             switch (component)
             {
                 case ComponentTypes.Transform:
-                    SetField(tObject.transform, (TransformFields)enumInt, value);
+                    SetField(tObject.transform, (TransformFields)fieldID, value);
+                    break;
+                case ComponentTypes.Camera:
+                    SetField(tObject.camera, (CameraFields)fieldID, value);
+                    break;
+                case ComponentTypes.Light:
+                    SetField(tObject.light, (LightFields)fieldID, value);
                     break;
                 case ComponentTypes.SpriteRenderer:
-                    SetField(tObject.spriteRenderer, (SpriteRendererFields)enumInt, value);
+                    SetField(tObject.spriteRenderer, (SpriteRendererFields)fieldID, value);
                     break;
                 case ComponentTypes.RectTransform:
-                    SetField(tObject.rectTransform, (RectTransformFields)enumInt, value);
+                    SetField(tObject.rectTransform, (RectTransformFields)fieldID, value);
+                    break;
+                case ComponentTypes.CanvasGroup:
+                    SetField(tObject.canvasGroup, (CanvasGroupFields)fieldID, value);
                     break;
                 case ComponentTypes.Image:
-                    SetField(tObject.image, (ImageFields)enumInt, value);
+                    SetField(tObject.image, (ImageFields)fieldID, value);
                     break;
                 case ComponentTypes.Text:
-                    SetField(tObject.text, (TextFields)enumInt, value);
+                    SetField(tObject.text, (TextFields)fieldID, value);
                     break;
             }
         }
-        public void SetField(GameObject obj, ComponentTypes component, int enumInt, float value)
+        public void SetField(GameObject obj, ComponentTypes component, int fieldID, float value)
         {
             switch (component)
             {
                 case ComponentTypes.Transform:
-                    SetField(obj.GetComponent<Transform>(), (TransformFields)enumInt, value);
+                    SetField(obj.GetComponent<Transform>(), (TransformFields)fieldID, value);
+                    break;
+                case ComponentTypes.Camera:
+                    SetField(obj.GetComponent<Camera>(), (CameraFields)fieldID, value);
+                    break;
+                case ComponentTypes.Light:
+                    SetField(obj.GetComponent<Light>(), (LightFields)fieldID, value);
                     break;
                 case ComponentTypes.SpriteRenderer:
-                    SetField(obj.GetComponent<SpriteRenderer>(), (SpriteRendererFields)enumInt, value);
+                    SetField(obj.GetComponent<SpriteRenderer>(), (SpriteRendererFields)fieldID, value);
                     break;
                 case ComponentTypes.RectTransform:
-                    SetField(obj.GetComponent<RectTransform>(), (RectTransformFields)enumInt, value);
+                    SetField(obj.GetComponent<RectTransform>(), (RectTransformFields)fieldID, value);
+                    break;
+                case ComponentTypes.CanvasGroup:
+                    SetField(obj.GetComponent<CanvasGroup>(), (CanvasGroupFields)fieldID, value);
                     break;
                 case ComponentTypes.Image:
-                    SetField(obj.GetComponent<Image>(), (ImageFields)enumInt, value);
+                    SetField(obj.GetComponent<Image>(), (ImageFields)fieldID, value);
                     break;
                 case ComponentTypes.Text:
-                    SetField(obj.GetComponent<Text>(), (TextFields)enumInt, value);
+                    SetField(obj.GetComponent<Text>(), (TextFields)fieldID, value);
                     break;
             }
         }
@@ -559,6 +670,45 @@ namespace EaseTransitionsSystem
                     transform.localScale = new Vector3(transform.localScale.x, value, transform.localScale.z); break;
                 case TransformFields.LocalScaleZ:
                     transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y, value); break;
+            }
+        }
+        public void SetField(Camera camera, CameraFields field, float value)
+        {
+            switch (field)
+            {
+                case CameraFields.BackgroundColorRed:
+                    camera.backgroundColor = new Color(value, camera.backgroundColor.g, camera.backgroundColor.b, camera.backgroundColor.a); break;
+                case CameraFields.BackgroundColorGreen:
+                    camera.backgroundColor = new Color(camera.backgroundColor.r, value, camera.backgroundColor.b, camera.backgroundColor.a); break;
+                case CameraFields.BackgroundColorBlue:
+                    camera.backgroundColor = new Color(camera.backgroundColor.r, camera.backgroundColor.g, value, camera.backgroundColor.a); break;
+                case CameraFields.BackgroundColorAlpha:
+                    camera.backgroundColor = new Color(camera.backgroundColor.r, camera.backgroundColor.g, camera.backgroundColor.b, value); break;
+
+                case CameraFields.FieldOfView:
+                    camera.fieldOfView = value; break;
+                case CameraFields.OrthographicSize:
+                    camera.orthographicSize = value; break;
+            }
+        }
+        public void SetField(Light light, LightFields field, float value)
+        {
+            switch (field)
+            {
+                case LightFields.ColorRed:
+                    light.color = new Color(value, light.color.g, light.color.b, light.color.a); break;
+                case LightFields.ColorGreen:
+                    light.color = new Color(light.color.r, value, light.color.b, light.color.a); break;
+                case LightFields.ColorBlue:
+                    light.color = new Color(light.color.r, light.color.g, value, light.color.a); break;
+                case LightFields.ColorAlpha:
+                    light.color = new Color(light.color.r, light.color.g, light.color.b, value); break;
+
+                case LightFields.Intensity:
+                    light.intensity = value; break;
+
+                case LightFields.ShadowStrength:
+                    light.shadowStrength = value; break;
             }
         }
         public void SetField(SpriteRenderer spriteRenderer, SpriteRendererFields field, float value)
@@ -675,6 +825,14 @@ namespace EaseTransitionsSystem
                     rectTransform.offsetMax = new Vector3(rectTransform.offsetMax.x, value); break;
             }
         }
+        public void SetField(CanvasGroup canvasGroup, CanvasGroupFields field, float value)
+        {
+            switch (field)
+            {
+                case CanvasGroupFields.Alpha:
+                    canvasGroup.alpha = value; break;
+            }
+        }
         public void SetField(Image image, ImageFields field, float value)
         {
             switch (field)
@@ -788,21 +946,21 @@ namespace EaseTransitionsSystem
                     foreach (KeyValuePair<Vector2Int, TransitionValue> kvp in tObject.values)    // Iterates through all tValues in object
                     {
                         ComponentTypes component = (ComponentTypes)kvp.Key.x;
-                        int enumInt = kvp.Key.y;
+                        int fieldID = kvp.Key.y;
                         TransitionValue tValue = kvp.Value;
 
                         if (!tValue.timed)    // Sets timer if tValue is new
-                            SetTimer(tValue, GetField(tObject, component, enumInt));
+                            SetTimer(tValue, GetField(tObject, component, fieldID));
 
                         if (tValue.timer == tValue.duration)    // Confirms end point once transition finishes
                         {
-                            SetField(tObject, component, enumInt, tValue.end);
+                            SetField(tObject, component, fieldID, tValue.end);
                             continue;
                         }
 
                         tValue.timer = Mathf.Clamp(tValue.timer + (Time.unscaledDeltaTime * timeScale), 0, tValue.duration);    // Increment timer with time between frames * time scaler 
 
-                        SetField(tObject, component, enumInt, EaseValue(tValue));    // Sets field value based on new time
+                        SetField(tObject, component, fieldID, EaseValue(tValue));    // Sets field value based on new time
                         newValues.Add(kvp.Key, tValue);
                     }
 

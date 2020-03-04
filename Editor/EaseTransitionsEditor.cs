@@ -82,6 +82,7 @@ public class TransitionObject
 public class TransitionComponent
 {
     public ComponentTypes type;
+    public string typeName;
 
     public bool showFields;
 
@@ -91,6 +92,7 @@ public class TransitionComponent
     public TransitionComponent(ComponentTypes _type)
     {
         type = _type;
+        typeName = type.ToString();
 
         showFields = true;
 
@@ -101,7 +103,8 @@ public class TransitionComponent
 [Serializable]
 public class TransitionField
 {
-    public int enumInt;
+    public int fieldID;
+    public string fieldName;
 
     public EaseFunctions ease;
     public EaseDirections direction;
@@ -111,9 +114,10 @@ public class TransitionField
     public float end;
 
 
-    public TransitionField(int _enumInt)
+    public TransitionField(int _fieldID, string _fieldName)
     {
-        enumInt = _enumInt;
+        fieldID = _fieldID;
+        fieldName = _fieldName;
     }
 }
 
@@ -200,6 +204,9 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
         tObjects = new Dictionary<GameObject, ETS.TransitionObject>();
         transitioning = false;
+
+        if (data != null)
+            CheckDataSerialization();
     }
     private void SetWindowSize(int width)
     {
@@ -476,7 +483,6 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         #endregion Selected History
     }
 
-
     #region Transition Testing
     private Dictionary<GameObject, ETS.TransitionObject> tObjects;
     private bool transitioning;
@@ -507,8 +513,8 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         return tObjects[gameObject];
     }
 
-    private void SetTransition(GameObject gameObject, ComponentTypes component, int enumInt, EaseFunctions ease, EaseDirections direction, float duration, float start, float end, bool startPosition) => SetTransition(gameObject, new Vector2Int((int)component, enumInt), ease, direction, duration, start, end, startPosition);
-    private void SetTransition(GameObject gameObject, Vector2Int enumInt, EaseFunctions ease, EaseDirections direction, float duration, float start, float end, bool startPosition)
+    private void SetTransition(GameObject gameObject, ComponentTypes component, int fieldID, EaseFunctions ease, EaseDirections direction, float duration, float start, float end, bool startPosition) => SetTransition(gameObject, new Vector2Int((int)component, fieldID), ease, direction, duration, start, end, startPosition);
+    private void SetTransition(GameObject gameObject, Vector2Int enumID, EaseFunctions ease, EaseDirections direction, float duration, float start, float end, bool startPosition)
     {
         ETS.TransitionObject tObject = CheckTObject(gameObject);
         StopTransition(tObject);
@@ -516,12 +522,12 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
             return;
 
         if (startPosition)
-            easeTransitions.SetField(gameObject, (ComponentTypes)enumInt.x, enumInt.y, start);
+            easeTransitions.SetField(gameObject, (ComponentTypes)enumID.x, enumID.y, start);
 
-        if (tObject.values.ContainsKey(enumInt))
-            tObject.values[enumInt] = new TransitionValue(ease, direction, duration, start, end);
+        if (tObject.values.ContainsKey(enumID))
+            tObject.values[enumID] = new TransitionValue(ease, direction, duration, start, end);
         else
-            tObject.values.Add(enumInt, new TransitionValue(ease, direction, duration, start, end));
+            tObject.values.Add(enumID, new TransitionValue(ease, direction, duration, start, end));
 
         if (!EaseTransitions.tObjects.Contains(tObject))
             EaseTransitions.tObjects.Add(tObject);
@@ -613,6 +619,33 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
     #endregion GUI Methods
 
     #region Data Methods
+    private void CheckDataSerialization()
+    {
+        for (int g = 0; g < data.groups.Count; g++)
+            for (int o = 0; o < data.groups[g].objects.Count; o++)
+                for (int c = 0; c < data.groups[g].objects[o].components.Count; c++)
+                {
+                    TransitionComponent component = data.groups[g].objects[o].components[c];
+
+                    if (component.typeName == "")
+                        component.typeName = component.type.ToString();
+
+                    if (component.type.ToString() != component.typeName)
+                        component.type = (ComponentTypes)Enum.Parse(typeof(ComponentTypes), component.typeName);
+
+                    for (int f = 0; f < component.fields.Count; f++)
+                    {
+                        TransitionField field = component.fields[f];
+
+                        if (field.fieldName == "")
+                            field.fieldName = GetFieldNames(component.type)[field.fieldID];
+
+                        if (GetFieldNames(component.type)[field.fieldID] != field.fieldName)
+                            field.fieldID = (int)Array.FindIndex(GetFieldNames(component.type), fieldName => fieldName == field.fieldName);
+                    }
+                }
+    }
+
     private void SetAddress(ListAddress address, int? group = null, int? obj = null, bool? show = false, bool? save = false)
     {
         if (group != null)
@@ -1190,10 +1223,16 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         {
             case ComponentTypes.Transform:
                 return typeof(Transform);
+            case ComponentTypes.Camera:
+                return typeof(Camera);
+            case ComponentTypes.Light:
+                return typeof(Light);
             case ComponentTypes.SpriteRenderer:
                 return typeof(SpriteRenderer);
             case ComponentTypes.RectTransform:
                 return typeof(RectTransform);
+            case ComponentTypes.CanvasGroup:
+                return typeof(CanvasGroup);
             case ComponentTypes.Image:
                 return typeof(Image);
             case ComponentTypes.Text:
@@ -1207,10 +1246,16 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         {
             case ComponentTypes.Transform:
                 return typeof(TransformFields);
+            case ComponentTypes.Camera:
+                return typeof(CameraFields);
+            case ComponentTypes.Light:
+                return typeof(LightFields);
             case ComponentTypes.SpriteRenderer:
                 return typeof(SpriteRendererFields);
             case ComponentTypes.RectTransform:
                 return typeof(RectTransformFields);
+            case ComponentTypes.CanvasGroup:
+                return typeof(CanvasGroupFields);
             case ComponentTypes.Image:
                 return typeof(ImageFields);
             case ComponentTypes.Text:
@@ -1219,7 +1264,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         return null;
     }
 
-    private string GetFieldName(ComponentTypes type, int enumInt, bool? nicify = true) => GetFieldNames(type, nicify)[enumInt];
+    private string GetFieldName(ComponentTypes type, int fieldID, bool? nicify = true) => GetFieldNames(type, nicify)[fieldID];
     private string[] GetFieldNames(ComponentTypes type, bool? nicify = true)
     {
         string[] names = Enum.GetNames(GetComponentFieldsEnum(type));
@@ -1234,13 +1279,14 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
     private void Copy(TransitionComponent oldComponent, TransitionComponent newComponent)
     {
         newComponent.type = oldComponent.type;
+        newComponent.typeName = oldComponent.typeName;
 
         newComponent.showFields = oldComponent.showFields;
 
         newComponent.fields = new List<TransitionField>();
         for (int f = 0; f < oldComponent.fields.Count; f++)
         {
-            newComponent.fields.Add(new TransitionField(0));
+            newComponent.fields.Add(new TransitionField(0, ""));
             Copy(oldComponent.fields[f], newComponent.fields[f]);
         }
     }
@@ -1250,7 +1296,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         Dictionary<int, TransitionField> fields = new Dictionary<int, TransitionField>();
 
         for (int f = 0; f < component.fields.Count; f++)
-            fields.Add(component.fields[f].enumInt, component.fields[f]);
+            fields.Add(component.fields[f].fieldID, component.fields[f]);
 
         component.fields.Clear();
 
@@ -1307,25 +1353,28 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
         return -1;
     }
-    private bool UniqueEnumInt(List<TransitionField> fields, int enumInt)
+    private bool UniqueEnumInt(List<TransitionField> fields, int fieldID)
     {
         for (int f = 0; f < fields.Count; f++)
-            if (fields[f].enumInt == enumInt)
+            if (fields[f].fieldID == fieldID)
                 return false;
 
         return true;
     }
 
-    private void ReField(List<TransitionField> fields, int pos, ComponentTypes type, int enumInt) => ReField(fields, fields[pos], type, enumInt);
-    private void ReField(List<TransitionField> fields, TransitionField field, ComponentTypes type, int enumInt)
+    private void ReField(List<TransitionField> fields, int pos, ComponentTypes component, int fieldID) => ReField(fields, fields[pos], component, fieldID);
+    private void ReField(List<TransitionField> fields, TransitionField field, ComponentTypes component, int fieldID)
     {
-        if (UniqueEnumInt(fields, enumInt))
-            field.enumInt = enumInt;
+        if (UniqueEnumInt(fields, fieldID))
+        {
+            field.fieldID = fieldID;
+            field.fieldName = GetFieldName(component, fieldID);
+        }
         else
-            Debug.LogWarning("Field \"" + GetFieldName(type, enumInt) + "\" already exists");
+            Debug.LogWarning("Field \"" + GetFieldName(component, fieldID) + "\" already exists");
     }
 
-    private void Add(List<TransitionField> fields, int enumInt, int? pos = null) => Add(fields, new TransitionField(enumInt), pos);
+    private void Add(List<TransitionField> fields, ComponentTypes component, int fieldID, int? pos = null) => Add(fields, new TransitionField(fieldID, GetFieldName(component, fieldID)), pos);
     private void Add(List<TransitionField> fields, TransitionField field, int? pos = null)
     {
         if (pos == null)
@@ -1355,7 +1404,8 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
     private void Copy(TransitionField oldField, TransitionField newField)
     {
-        newField.enumInt = oldField.enumInt;
+        newField.fieldID = oldField.fieldID;
+        newField.fieldName = oldField.fieldName;
 
         newField.ease = oldField.ease;
         newField.direction = oldField.direction;
@@ -1372,7 +1422,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         if (!FindEaseTransitons())
             return;
 
-        field.start = easeTransitions.GetField(gameObject, type, field.enumInt);
+        field.start = easeTransitions.GetField(gameObject, type, field.fieldID);
     }
     private void ImportToEnd(TransitionField field, GameObject gameObject, ComponentTypes type)
     {
@@ -1381,7 +1431,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         if (!FindEaseTransitons())
             return;
 
-        field.end = easeTransitions.GetField(gameObject, type, field.enumInt);
+        field.end = easeTransitions.GetField(gameObject, type, field.fieldID);
     }
 
     private void SetToStart(TransitionField field, GameObject gameObject, ComponentTypes type)
@@ -1394,7 +1444,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         ETS.TransitionObject tObject = CheckTObject(gameObject);
         StopTransition(tObject);
 
-        easeTransitions.SetField(gameObject, type, field.enumInt, field.start);
+        easeTransitions.SetField(gameObject, type, field.fieldID, field.start);
     }
     private void SetToEnd(TransitionField field, GameObject gameObject, ComponentTypes type)
     {
@@ -1406,7 +1456,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         ETS.TransitionObject tObject = CheckTObject(gameObject);
         StopTransition(tObject);
 
-        easeTransitions.SetField(gameObject, type, field.enumInt, field.end);
+        easeTransitions.SetField(gameObject, type, field.fieldID, field.end);
     }
 
     private void SetTransition(TransitionField field, GameObject gameObject, ComponentTypes type, bool startPosition)
@@ -1419,14 +1469,14 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         ETS.TransitionObject tObject = CheckTObject(gameObject);
         StopTransition(tObject);
 
-        SetTransition(gameObject, type, field.enumInt, field.ease, field.direction, field.duration, field.start, field.end, startPosition);
+        SetTransition(gameObject, type, field.fieldID, field.ease, field.direction, field.duration, field.start, field.end, startPosition);
     }
 
     private string ExportCode(TransitionField field, string name, ComponentTypes type, int indents)
     {
         string code = "";
 
-        code += Write(indents, "tObjects[\"" + name + "\"].SetTransition(" + GetComponentFieldsEnum(type).ToString().Remove(0, 22) + "." + GetFieldName(type, field.enumInt, false) + ", EaseFunctions." + field.ease + ", EaseDirections." + field.direction + "," + field.duration + "f, " + field.start + "f, " + field.end + "f);");
+        code += Write(indents, "tObjects[\"" + name + "\"].SetTransition(" + GetComponentFieldsEnum(type).ToString().Remove(0, 22) + "." + GetFieldName(type, field.fieldID, false) + ", EaseFunctions." + field.ease + ", EaseDirections." + field.direction + "," + field.duration + "f, " + field.start + "f, " + field.end + "f);");
 
         return code;
     }
@@ -2400,7 +2450,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                                     GUILayout.Label("", EditorStyles.toolbarButton, GUILayout.Width(1));
                                     component.showFields = EditorGUILayout.Toggle(component.showFields, EditorStyles.foldout, GUILayout.Width(16), GUILayout.Height(16));
 
-                                    GUILayout.Label(component.type.ToString(), toolbarLabel);
+                                    GUILayout.Label(component.typeName, toolbarLabel);
 
                                     int count = EditorGUILayout.DelayedIntField(component.fields.Count, EditorStyles.toolbarTextField, GUILayout.Width(32));
                                     if (GUILayout.Button("+", new GUIStyle("ToolbarButton") { padding = new RectOffset(1, 0, 0, 0) }, GUILayout.Width(20)))
@@ -2412,7 +2462,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                                     {
                                         count = Mathf.Clamp(count, 0, GetFieldNames(component.type).Length);
                                         while (count > component.fields.Count)
-                                            Add(component.fields, NewEnumInt(component.fields));
+                                            Add(component.fields, component.type, NewEnumInt(component.fields));
                                         while (count < component.fields.Count)
                                             Remove(component.fields);
                                     }
@@ -2431,6 +2481,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                                     for (int f = 0; f < component.fields.Count; f++)
                                     {
                                         TransitionField field = component.fields[f];
+
                                         int devisor = 0;
                                         if (component.fields.Count % 2 == 0)
                                             devisor = 1;
@@ -2450,9 +2501,9 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                                             if (order != f + 1)
                                                 Move(component.fields, field, order - 1);
                                         }
-                                        int enumInt = EditorGUILayout.Popup(field.enumInt, GetFieldNames(component.type));
-                                        if (enumInt != field.enumInt)
-                                            ReField(component.fields, field, component.type, enumInt);
+                                        int fieldID = EditorGUILayout.Popup(field.fieldID, GetFieldNames(component.type));
+                                        if (fieldID != field.fieldID)
+                                            ReField(component.fields, field, component.type, fieldID);
                                         if (GUILayout.Button("Delete", GUILayout.Width(48), GUILayout.Height(18)))
                                             Remove(component.fields, field);
                                         GUILayout.EndHorizontal();
