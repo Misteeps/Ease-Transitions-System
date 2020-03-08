@@ -22,6 +22,7 @@ public class TransitionGroup
     public bool showTests;
     public bool showObjs;
     public bool showCode;
+    public bool testLoop;
 
     public List<TransitionObject> objects;
 
@@ -35,6 +36,7 @@ public class TransitionGroup
         showTests = true;
         showObjs = true;
         showCode = true;
+        testLoop = true;
 
         objects = new List<TransitionObject>();
     }
@@ -50,11 +52,16 @@ public class TransitionObject
     public bool showImports;
     public bool showEase;
     public bool showCode;
+    public bool testLoop;
 
     public bool singleEase;
     public EaseFunctions ease;
     public EaseDirections direction;
     public float duration;
+
+    public TransitionLoop loop;
+    public int loopAmount;
+    public float loopDelay;
 
     public List<TransitionComponent> components;
 
@@ -71,8 +78,11 @@ public class TransitionObject
         showImports = true;
         showCode = true;
         showEase = true;
+        testLoop = true;
 
         singleEase = true;
+
+        loopAmount = -1;
 
         components = new List<TransitionComponent>();
     }
@@ -525,14 +535,36 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
             easeTransitions.SetField(gameObject, (ComponentTypes)enumID.x, enumID.y, start);
 
         if (tObject.values.ContainsKey(enumID))
-            tObject.values[enumID] = new TransitionValue(ease, direction, duration, start, end);
+            tObject.values[enumID] = new TransitionValue(ease, direction, duration, start, end, EaseTransitions.GetField(gameObject, (ComponentTypes)enumID.x, enumID.y));
         else
-            tObject.values.Add(enumID, new TransitionValue(ease, direction, duration, start, end));
+            tObject.values.Add(enumID, new TransitionValue(ease, direction, duration, start, end, EaseTransitions.GetField(gameObject, (ComponentTypes)enumID.x, enumID.y)));
 
         if (!EaseTransitions.tObjects.Contains(tObject))
             EaseTransitions.tObjects.Add(tObject);
 
         transitioning = true;
+    }
+
+    private void PlayTransitions(GameObject gameObject)
+    {
+        tObjects[gameObject].PlayAllTransitions();
+    }
+    private void ReverseTransitions(GameObject gameObject)
+    {
+        tObjects[gameObject].ReverseAllTransitions();
+    }
+    private void PauseTransitions(GameObject gameObject)
+    {
+        tObjects[gameObject].PauseAllTransitions();
+    }
+    private void ClearTransitions(GameObject gameObject)
+    {
+        tObjects[gameObject].ClearAllTransitions();
+    }
+
+    private void LoopTransitions(GameObject gameObject, TransitionLoop loop, int amount, float delay)
+    {
+        tObjects[gameObject].LoopAllTransitions(loop, amount, delay);
     }
 
     private void StopTransition(ETS.TransitionObject tObject) => EaseTransitions.tObjects.Remove(tObject);
@@ -1138,6 +1170,10 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
         newObj.direction = oldObj.direction;
         newObj.duration = oldObj.duration;
 
+        newObj.loop = oldObj.loop;
+        newObj.loopAmount = oldObj.loopAmount;
+        newObj.loopDelay = oldObj.loopDelay;
+
         newObj.components = new List<TransitionComponent>();
         for (int c = 0; c < oldObj.components.Count; c++)
         {
@@ -1190,6 +1226,12 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
 
         if (code.Length != 0)
             code = code.Remove(code.Length - 1, 1);
+
+        if (obj.loop != TransitionLoop.None)
+        {
+            code += "\n";
+            code += Write(indents, "tObjects[\"" + obj.name + "\"].LoopAllTransitions(TransitionLoop." + obj.loop + ", " + obj.loopAmount + ", " + obj.loopDelay + "f);");
+        }
 
         return code;
     }
@@ -2084,10 +2126,47 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             GUILayout.Space(4);
 
                             if (GUILayout.Button("Transition from Start"))
+                            {
                                 SetTransition(group, true);
+                                if (group.testLoop)
+                                    for (int o = 0; o < group.objects.Count; o++)
+                                    LoopTransitions(group.objects[o].gameObject, group.objects[o].loop, group.objects[o].loopAmount, group.objects[o].loopDelay);
+                            }
 
                             if (GUILayout.Button("Transition from Current"))
+                            {
                                 SetTransition(group, false);
+                                for (int o = 0; o < group.objects.Count; o++)
+                                    LoopTransitions(group.objects[o].gameObject, group.objects[o].loop, group.objects[o].loopAmount, group.objects[o].loopDelay);
+                                { }
+                            }
+
+                            GUILayout.Space(4);
+
+                            GUILayout.BeginHorizontal();
+                            if (GUILayout.Button("Play Transitions"))
+                                for (int o = 0; o < group.objects.Count; o++)
+                                    PlayTransitions(group.objects[o].gameObject);
+                            if (GUILayout.Button("Reverse Transitions"))
+                                for (int o = 0; o < group.objects.Count; o++)
+                                    ReverseTransitions(group.objects[o].gameObject);
+                            GUILayout.EndHorizontal();
+
+                            GUILayout.BeginHorizontal();
+                            if (GUILayout.Button("Pause Transitions"))
+                                for (int o = 0; o < group.objects.Count; o++)
+                                    PauseTransitions(group.objects[o].gameObject);
+                            if (GUILayout.Button("Clear Transitions"))
+                                for (int o = 0; o < group.objects.Count; o++)
+                                    ClearTransitions(group.objects[o].gameObject);
+                            GUILayout.EndHorizontal();
+
+                            GUILayout.Space(4);
+
+                            GUILayout.BeginHorizontal();
+                            EditorGUILayout.LabelField("Test Loops", GUILayout.Width(149));
+                            group.testLoop = EditorGUILayout.Toggle(group.testLoop);
+                            GUILayout.EndHorizontal();
 
                             GUILayout.Space(4);
 
@@ -2307,12 +2386,41 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             GUILayout.Space(4);
 
                             if (GUILayout.Button("Transition from Start"))
+                            {
                                 SetTransition(obj, true);
+                                if (obj.testLoop)
+                                    LoopTransitions(obj.gameObject, obj.loop, obj.loopAmount, obj.loopDelay);
+                            }
 
                             if (GUILayout.Button("Transition from Current"))
+                            {
                                 SetTransition(obj, false);
+                                if (obj.testLoop)
+                                    LoopTransitions(obj.gameObject, obj.loop, obj.loopAmount, obj.loopDelay);
+                            }
 
                             GUILayout.Space(4);
+
+                            GUILayout.BeginHorizontal();
+                            if (GUILayout.Button("Play Transitions"))
+                                PlayTransitions(obj.gameObject);
+                            if (GUILayout.Button("Reverse Transitions"))
+                                ReverseTransitions(obj.gameObject);
+                            GUILayout.EndHorizontal();
+
+                            GUILayout.BeginHorizontal();
+                            if (GUILayout.Button("Pause Transitions"))
+                                PauseTransitions(obj.gameObject);
+                            if (GUILayout.Button("Clear Transitions"))
+                                ClearTransitions(obj.gameObject);
+                            GUILayout.EndHorizontal();
+
+                            GUILayout.Space(4);
+
+                            GUILayout.BeginHorizontal();
+                            EditorGUILayout.LabelField("Test Loops", GUILayout.Width(149));
+                            obj.testLoop = EditorGUILayout.Toggle(obj.testLoop);
+                            GUILayout.EndHorizontal();
 
                             GUILayout.BeginHorizontal();
                             EditorGUILayout.LabelField("Transitions : " + EaseTransitions.tObjects.Count, GUILayout.Width(149));
@@ -2401,8 +2509,7 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                             GUILayout.BeginVertical(bg);
                             bgColor();
                             GUILayout.Space(4);
-
-
+                            
                             GUILayout.BeginHorizontal();
                             GUILayout.Label("Singular Ease", GUILayout.Width(124), GUILayout.Height(16));
                             obj.singleEase = EditorGUILayout.Toggle(obj.singleEase);
@@ -2425,6 +2532,59 @@ public class EaseTransitionsEditor : EditorWindow, IHasCustomMenu
                         #endregion Buttons
                     }
                     #endregion Ease
+
+                    GUILayout.Space(2);
+                    EditorGUILayout.LabelField("", GUI.skin.horizontalSlider, GUILayout.MinWidth(0));
+                    GUILayout.Space(2);
+
+                    #region Loop
+                    {
+                        #region Toolbar
+                        {
+                            bgColor(12);
+                            GUILayout.BeginHorizontal(EditorStyles.toolbar);
+
+                            GUILayout.Label("", EditorStyles.toolbarButton, GUILayout.Width(1));
+                            obj.showEase = EditorGUILayout.Toggle(obj.showEase, EditorStyles.foldout, GUILayout.Width(16), GUILayout.Height(16));
+
+                            GUILayout.Label("Loop", toolbarLabel);
+
+                            GUILayout.Button("", EditorStyles.toolbarButton, GUILayout.Width(78));
+
+                            bgColor();
+                            GUILayout.EndHorizontal();
+                        }
+                        #endregion Toolbar
+
+                        #region Buttons
+                        if (obj.showEase)
+                        {
+                            bgColor(9);
+                            GUILayout.BeginVertical(bg);
+                            bgColor();
+                            GUILayout.Space(4);
+
+                            GUILayout.BeginHorizontal();
+                            GUILayout.Label("Loop Type", GUILayout.Width(124), GUILayout.Height(16));
+                            obj.loop = (TransitionLoop)EditorGUILayout.EnumPopup(obj.loop);
+                            GUILayout.EndHorizontal();
+
+                            GUILayout.BeginHorizontal();
+                            GUILayout.Label("Amount", GUILayout.Width(124), GUILayout.Height(16));
+                            obj.loopAmount = EditorGUILayout.IntField(obj.loopAmount);
+                            GUILayout.EndHorizontal();
+
+                            GUILayout.BeginHorizontal();
+                            GUILayout.Label("Delay", GUILayout.Width(124), GUILayout.Height(16));
+                            obj.loopDelay = EditorGUILayout.FloatField(obj.loopDelay);
+                            GUILayout.EndHorizontal();
+
+                            GUILayout.Space(4);
+                            GUILayout.EndVertical();
+                        }
+                        #endregion Buttons
+                    }
+                    #endregion Loop
 
                     GUILayout.Space(2);
                     EditorGUILayout.LabelField("", GUI.skin.horizontalSlider, GUILayout.MinWidth(0));
