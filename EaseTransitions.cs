@@ -74,7 +74,7 @@ namespace EaseTransitionsSystem
 
     #region Data Containers
     public enum TransitionState { Forward, Backward, Paused, Ended }
-    public enum TransitionLoop { None, Repeat, BackAndForth }
+    public enum TransitionLoop { None, Repeat, Flip, Reverse }
 
     // Data container for GameObjects being Transitioned
     public class TransitionObject
@@ -125,22 +125,22 @@ namespace EaseTransitionsSystem
 
 
         #region Set Transition
-        public void SetTransition(TransformFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end, TransitionLoop? loop = TransitionLoop.None, float? loopDelay = 0) => SetTransition(new Vector2Int((int)ComponentTypes.Transform, (int)field), ease, direction, duration, start, end, loop, loopDelay);
-        public void SetTransition(CameraFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end, TransitionLoop? loop = TransitionLoop.None, float? loopDelay = 0) => SetTransition(new Vector2Int((int)ComponentTypes.Camera, (int)field), ease, direction, duration, start, end, loop, loopDelay);
-        public void SetTransition(LightFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end, TransitionLoop? loop = TransitionLoop.None, float? loopDelay = 0) => SetTransition(new Vector2Int((int)ComponentTypes.Light, (int)field), ease, direction, duration, start, end, loop, loopDelay);
-        public void SetTransition(SpriteRendererFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end, TransitionLoop? loop = TransitionLoop.None, float? loopDelay = 0) => SetTransition(new Vector2Int((int)ComponentTypes.SpriteRenderer, (int)field), ease, direction, duration, start, end, loop, loopDelay);
-        public void SetTransition(RectTransformFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end, TransitionLoop? loop = TransitionLoop.None, float? loopDelay = 0) => SetTransition(new Vector2Int((int)ComponentTypes.RectTransform, (int)field), ease, direction, duration, start, end, loop, loopDelay);
-        public void SetTransition(CanvasGroupFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end, TransitionLoop? loop = TransitionLoop.None, float? loopDelay = 0) => SetTransition(new Vector2Int((int)ComponentTypes.CanvasGroup, (int)field), ease, direction, duration, start, end, loop, loopDelay);
-        public void SetTransition(ImageFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end, TransitionLoop? loop = TransitionLoop.None, float? loopDelay = 0) => SetTransition(new Vector2Int((int)ComponentTypes.Image, (int)field), ease, direction, duration, start, end, loop, loopDelay);
-        public void SetTransition(TextFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end, TransitionLoop? loop = TransitionLoop.None, float? loopDelay = 0) => SetTransition(new Vector2Int((int)ComponentTypes.Text, (int)field), ease, direction, duration, start, end, loop, loopDelay);
+        public void SetTransition(TransformFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Transform, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(CameraFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Camera, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(LightFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Light, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(SpriteRendererFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.SpriteRenderer, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(RectTransformFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.RectTransform, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(CanvasGroupFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.CanvasGroup, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(ImageFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Image, (int)field), ease, direction, duration, start, end);
+        public void SetTransition(TextFields field, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)ComponentTypes.Text, (int)field), ease, direction, duration, start, end);
 
-        public void SetTransition(ComponentTypes component, int fieldID, EaseFunctions ease, EaseDirections direction, float duration, float start, float end, TransitionLoop? loop = TransitionLoop.None, float? loopDelay = 0) => SetTransition(new Vector2Int((int)component, fieldID), ease, direction, duration, start, end, loop, loopDelay);
-        public void SetTransition(Vector2Int enumID, EaseFunctions ease, EaseDirections direction, float duration, float start, float end, TransitionLoop? loop = TransitionLoop.None, float? loopDelay = 0)
+        public void SetTransition(ComponentTypes component, int fieldID, EaseFunctions ease, EaseDirections direction, float duration, float start, float end) => SetTransition(new Vector2Int((int)component, fieldID), ease, direction, duration, start, end);
+        public void SetTransition(Vector2Int enumID, EaseFunctions ease, EaseDirections direction, float duration, float start, float end)
         {
             if (values.ContainsKey(enumID))
-                values[enumID] = new TransitionValue(ease, direction, duration, start, end, loop, loopDelay, EaseTransitions.GetField(this, (ComponentTypes)enumID.x, enumID.y));
+                values[enumID] = new TransitionValue(ease, direction, duration, start, end, EaseTransitions.GetField(this, (ComponentTypes)enumID.x, enumID.y));
             else
-                values.Add(enumID, new TransitionValue(ease, direction, duration, start, end, loop, loopDelay, EaseTransitions.GetField(this, (ComponentTypes)enumID.x, enumID.y)));
+                values.Add(enumID, new TransitionValue(ease, direction, duration, start, end, EaseTransitions.GetField(this, (ComponentTypes)enumID.x, enumID.y)));
 
             if (!EaseTransitions.tObjects.Contains(this))
                 EaseTransitions.tObjects.Add(this);
@@ -221,26 +221,26 @@ namespace EaseTransitionsSystem
         #endregion Pause Transition
 
         #region Loop Transition
-        public void LoopTransition(TransformFields field, TransitionLoop loop, float delay) => LoopTransition(new Vector2Int((int)ComponentTypes.Transform, (int)field), loop, delay);
-        public void LoopTransition(CameraFields field, TransitionLoop loop, float delay) => LoopTransition(new Vector2Int((int)ComponentTypes.Camera, (int)field), loop, delay);
-        public void LoopTransition(LightFields field, TransitionLoop loop, float delay) => LoopTransition(new Vector2Int((int)ComponentTypes.Light, (int)field), loop, delay);
-        public void LoopTransition(SpriteRendererFields field, TransitionLoop loop, float delay) => LoopTransition(new Vector2Int((int)ComponentTypes.SpriteRenderer, (int)field), loop, delay);
-        public void LoopTransition(RectTransformFields field, TransitionLoop loop, float delay) => LoopTransition(new Vector2Int((int)ComponentTypes.RectTransform, (int)field), loop, delay);
-        public void LoopTransition(CanvasGroupFields field, TransitionLoop loop, float delay) => LoopTransition(new Vector2Int((int)ComponentTypes.CanvasGroup, (int)field), loop, delay);
-        public void LoopTransition(ImageFields field, TransitionLoop loop, float delay) => LoopTransition(new Vector2Int((int)ComponentTypes.Image, (int)field), loop, delay);
-        public void LoopTransition(TextFields field, TransitionLoop loop, float delay) => LoopTransition(new Vector2Int((int)ComponentTypes.Text, (int)field), loop, delay);
+        public void LoopTransition(TransformFields field, TransitionLoop loop, int amount, float delay) => LoopTransition(new Vector2Int((int)ComponentTypes.Transform, (int)field), loop, amount, delay);
+        public void LoopTransition(CameraFields field, TransitionLoop loop, int amount, float delay) => LoopTransition(new Vector2Int((int)ComponentTypes.Camera, (int)field), loop, amount, delay);
+        public void LoopTransition(LightFields field, TransitionLoop loop, int amount, float delay) => LoopTransition(new Vector2Int((int)ComponentTypes.Light, (int)field), loop, amount, delay);
+        public void LoopTransition(SpriteRendererFields field, TransitionLoop loop, int amount, float delay) => LoopTransition(new Vector2Int((int)ComponentTypes.SpriteRenderer, (int)field), loop, amount, delay);
+        public void LoopTransition(RectTransformFields field, TransitionLoop loop, int amount, float delay) => LoopTransition(new Vector2Int((int)ComponentTypes.RectTransform, (int)field), loop, amount, delay);
+        public void LoopTransition(CanvasGroupFields field, TransitionLoop loop, int amount, float delay) => LoopTransition(new Vector2Int((int)ComponentTypes.CanvasGroup, (int)field), loop, amount, delay);
+        public void LoopTransition(ImageFields field, TransitionLoop loop, int amount, float delay) => LoopTransition(new Vector2Int((int)ComponentTypes.Image, (int)field), loop, amount, delay);
+        public void LoopTransition(TextFields field, TransitionLoop loop, int amount, float delay) => LoopTransition(new Vector2Int((int)ComponentTypes.Text, (int)field), loop, amount, delay);
 
-        public void LoopTransition(ComponentTypes component, int fieldID, TransitionLoop loop, float delay) => LoopTransition(new Vector2Int((int)component, fieldID), loop, delay);
-        public void LoopTransition(Vector2Int enumID, TransitionLoop loop, float delay)
+        public void LoopTransition(ComponentTypes component, int fieldID, TransitionLoop loop, int amount, float delay) => LoopTransition(new Vector2Int((int)component, fieldID), loop, amount, delay);
+        public void LoopTransition(Vector2Int enumID, TransitionLoop loop, int amount, float delay)
         {
             if (values.ContainsKey(enumID))
-                values[enumID].LoopTransition(loop, delay);
+                values[enumID].LoopTransition(loop, amount, delay);
         }
 
-        public void LoopAllTransitions(TransitionLoop loop, float delay)
+        public void LoopAllTransitions(TransitionLoop loop, int amount, float delay)
         {
             foreach (Vector2Int enumID in values.Keys)
-                LoopTransition(enumID, loop, delay);
+                LoopTransition(enumID, loop, amount, delay);
         }
         #endregion Loop Transition
 
@@ -265,7 +265,7 @@ namespace EaseTransitionsSystem
         #endregion Clear Transition
     }
 
-    // Data container for a Transitioning number
+    // Data container for a Number being Transitioned
     public class TransitionValue
     {
         public EaseFunctions ease;
@@ -280,8 +280,10 @@ namespace EaseTransitionsSystem
         public float timer;
 
         public TransitionLoop loop;
-        public float loopTimer;
+        public int loopAmount;
+        public int loopCount;
         public float loopDelay;
+        public float loopTimer;
 
 
         public TransitionValue()
@@ -298,10 +300,12 @@ namespace EaseTransitionsSystem
             timer = 0;
 
             loop = TransitionLoop.None;
-            loopTimer = -1;
+            loopAmount = -1;
+            loopCount = 0;
             loopDelay = 0;
+            loopTimer = -1;
         }
-        public TransitionValue(EaseFunctions _ease, EaseDirections _direction, float _duration, float _start, float _end, TransitionLoop? _loop = TransitionLoop.None, float? _loopDelay = 0, float? _current = null)
+        public TransitionValue(EaseFunctions _ease, EaseDirections _direction, float _duration, float _start, float _end, float? _current = null)
         {
             ease = _ease;
             direction = _direction;
@@ -317,13 +321,15 @@ namespace EaseTransitionsSystem
             timed = false;
             timer = 0;
 
-            loop = _loop.Value;
+            loop = TransitionLoop.None;
+            loopAmount = -1;
+            loopCount = 0;
+            loopDelay = 0;
             loopTimer = -1;
-            loopDelay = _loopDelay.Value;
         }
 
 
-        public void SetTransition(EaseFunctions _ease, EaseDirections _direction, float _duration, float _start, float _end, TransitionLoop? _loop = TransitionLoop.None, float? _loopDelay = 0, float? _current = null)
+        public void SetTransition(EaseFunctions _ease, EaseDirections _direction, float _duration, float _start, float _end, float? _current = null)
         {
             ease = _ease;
             direction = _direction;
@@ -339,9 +345,11 @@ namespace EaseTransitionsSystem
             timed = false;
             timer = 0;
 
-            loop = _loop.Value;
+            loop = TransitionLoop.None;
+            loopAmount = -1;
+            loopCount = 0;
+            loopDelay = 0;
             loopTimer = -1;
-            loopDelay = _loopDelay.Value;
 
             if (!EaseTransitions.tValues.Contains(this))
                 EaseTransitions.tValues.Add(this);
@@ -363,10 +371,13 @@ namespace EaseTransitionsSystem
             state = TransitionState.Paused;
         }
 
-        public void LoopTransition(TransitionLoop loopType, float delay)
+        public void LoopTransition(TransitionLoop loopType, int amount, float delay)
         {
             loop = loopType;
+            loopAmount = amount;
+            loopCount = 0;
             loopDelay = delay;
+            loopTimer = -1;
         }
 
         public void ClearTransition()
@@ -1080,6 +1091,7 @@ namespace EaseTransitionsSystem
                 if (tValue.loopTimer == tValue.loopDelay)    // Checks finished delay
                 {
                     tValue.timer = 0;
+                    tValue.loopCount++;
                     tValue.loopTimer = -1;
 
                     switch (tValue.loop)
@@ -1088,10 +1100,17 @@ namespace EaseTransitionsSystem
                             tValue.state = TransitionState.Forward;    // Transition forward
                             break;
 
-                        case TransitionLoop.BackAndForth:
-                            if (tValue.state == TransitionState.Forward)    // Flips transition direction
+                        case TransitionLoop.Flip:
+                            if (tValue.direction == EaseDirections.In)    // Flips transition direction
+                                tValue.direction = EaseDirections.Out;
+                            else if (tValue.direction == EaseDirections.Out)
+                                tValue.direction = EaseDirections.In;
+                            goto case TransitionLoop.Reverse;
+
+                        case TransitionLoop.Reverse:
+                            if (tValue.state == TransitionState.Forward)    // Flips transition state direction
                             {
-                                tValue.timer = tValue.end;
+                                tValue.timer = tValue.duration;
                                 tValue.state = TransitionState.Backward;
                             }
                             else
@@ -1112,7 +1131,7 @@ namespace EaseTransitionsSystem
                 tValue.timer = Mathf.Clamp(tValue.timer + (Time.unscaledDeltaTime * timeScale), 0, tValue.duration);    // Increment timer forward with time between frames * time scaler
 
                 if (tValue.timer == tValue.duration)    // Checks finished transition
-                    if (tValue.loop == TransitionLoop.None)
+                    if (tValue.loop == TransitionLoop.None || tValue.loopCount == tValue.loopAmount)    // Checks for loops
                         tValue.state = TransitionState.Ended;    // End transition
                     else
                         tValue.loopTimer = 0;    // Sets transition for loop delay
@@ -1123,7 +1142,7 @@ namespace EaseTransitionsSystem
                 tValue.timer = Mathf.Clamp(tValue.timer - (Time.unscaledDeltaTime * timeScale), 0, tValue.duration);    // Increment timer backward with time between frames * time scaler
 
                 if (tValue.timer == 0)    // Checks finished transition
-                    if (tValue.loop == TransitionLoop.None)
+                    if (tValue.loop == TransitionLoop.None || tValue.loopCount == tValue.loopAmount)    // Checks for loops
                         tValue.state = TransitionState.Ended;    // End transition
                     else
                         tValue.loopTimer = 0;    // Sets transition for loop delay
